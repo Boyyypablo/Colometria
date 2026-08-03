@@ -14,9 +14,10 @@ Documento irmão (roadmap detalhado): [`colorimetry-ml-roadmap.md`](./colorimetr
 
 | Fase | Status | Entrega |
 |------|--------|---------|
-| 1 | **código no working tree** (não commitado) | Face detect pluggable + ROI + features tipadas + stubs schema |
+| 1 | **feita (commit)** | Face detect pluggable + ROI + features tipadas + stubs schema |
+| 1b | em curso | BlazeFace real (`FACE_DETECTOR=blazeface`) |
 | 2 | planejada | Dataset rotulado operacional + UI de feedback + export treino |
-| 3 | planejada | Modelo tabular v1 + `UserColorProfile` + retreino offline |
+| 3 | planejada | Modelo tabular v1 + bias de estação (`UserColorProfile`) + retreino |
 
 ## Contrato de troca (adapters)
 

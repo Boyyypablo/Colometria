@@ -1,4 +1,3 @@
-import { BlazeFaceDetector, OnnxYunetDetector } from "./providers/blazeface";
 import { HeuristicFaceDetector } from "./providers/heuristic";
 import type { FaceDetectionResult, FaceDetector } from "./types";
 
@@ -14,12 +13,19 @@ export function resolveFaceDetectorId(
   return "heuristic";
 }
 
-export function createFaceDetector(id?: FaceDetectorId): FaceDetector {
-  switch (id ?? resolveFaceDetectorId()) {
-    case "blazeface":
+export async function createFaceDetector(
+  id?: FaceDetectorId,
+): Promise<FaceDetector> {
+  const resolved = id ?? resolveFaceDetectorId();
+  switch (resolved) {
+    case "blazeface": {
+      const { BlazeFaceDetector } = await import("./providers/blazeface");
       return new BlazeFaceDetector();
-    case "onnx-yunet":
+    }
+    case "onnx-yunet": {
+      const { OnnxYunetDetector } = await import("./providers/blazeface");
       return new OnnxYunetDetector();
+    }
     default:
       return heuristic;
   }
@@ -27,7 +33,8 @@ export function createFaceDetector(id?: FaceDetectorId): FaceDetector {
 
 /**
  * Detecta rosto com o provider configurado.
- * Qualquer falha → heuristic (plano: manter e trocar sem quebrar análise).
+ * Exceção de load/runtime → heuristic.
+ * Zero rostos com sucesso do provider → devolve primary null (análise decide NEEDS_REVIEW).
  */
 export async function detectFaceWithFallback(
   buffer: Buffer,
@@ -36,18 +43,12 @@ export async function detectFaceWithFallback(
   preferred?: FaceDetectorId,
 ): Promise<FaceDetectionResult> {
   const id = preferred ?? resolveFaceDetectorId();
-  const primary = createFaceDetector(id);
+  const primary = await createFaceDetector(id);
 
   try {
-    const result = await primary.detect(buffer, width, height);
-    if (!result.primary) {
-      throw new Error("Detector não retornou face primária");
-    }
-    return result;
+    return await primary.detect(buffer, width, height);
   } catch (err) {
-    if (id === "heuristic") {
-      throw err;
-    }
+    if (id === "heuristic") throw err;
     const fallback = await heuristic.detect(buffer, width, height);
     const msg =
       err instanceof Error ? err.message : "Falha no detector configurado";

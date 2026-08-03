@@ -298,10 +298,10 @@ S ≈ 1–2 dias focados · M ≈ 3–7 dias.
 
 | # | Decisão | Resposta | Data |
 |---|---------|----------|------|
-| 1 | Commit Fase 1 foundation | **Sim — feito** | 2026-08-02 |
-| 2 | Prioridade pós-commit | **(A) BlazeFace real** | 2026-08-02 |
-| 3 | TTL de fotos/samples | **Sim** — default `PHOTO_RETENTION_DAYS=365` (12 meses); job de purge a implementar | 2026-08-02 |
-| 4 | Personalização começa por | **Bias de estação** (`UserColorProfile` temperature/value/chroma → ajuste antes do preditor) | 2026-08-02 |
+| 1 | Commit Fase 1 foundation | **Sim — `45a55c7`** | 2026-08-02 |
+| 2 | Prioridade pós-commit | **(A) BlazeFace real** — implementação no working tree | 2026-08-02 |
+| 3 | TTL de fotos/samples | **Sim** — `PHOTO_RETENTION_DAYS=365`; purge job ainda a fazer | 2026-08-02 |
+| 4 | Personalização começa por | **Bias de estação** (`UserColorProfile`) | 2026-08-02 |
 
 Próximo detalhe de execução: adapter BlazeFace + env `FACE_DETECTOR=blazeface` com fallback heuristic; depois UI feedback (Fase 2) e calibração de bias (Fase 3).
 

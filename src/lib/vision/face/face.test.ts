@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { roisFromFaceBox, analysisCropFromFace } from "@/lib/vision/face/rois";
 import { HeuristicFaceDetector } from "@/lib/vision/face/providers/heuristic";
+import { createFaceDetector } from "@/lib/vision/face";
 import sharp from "sharp";
 
 describe("roisFromFaceBox", () => {
@@ -34,7 +35,6 @@ describe("roisFromFaceBox", () => {
 
 describe("HeuristicFaceDetector", () => {
   it("encontra janela de pele em imagem sintética", async () => {
-    // Fundo azul + bloco pele no centro
     const w = 200;
     const h = 240;
     const raw = Buffer.alloc(w * h * 3);
@@ -62,9 +62,20 @@ describe("HeuristicFaceDetector", () => {
     expect(result.provider).toBe("heuristic");
     expect(result.primary).not.toBeNull();
     expect(result.rois.length).toBe(4);
-    // Centro do crop deve ficar perto do centro da face sintética
     const cx = result.primary!.x + result.primary!.width / 2;
     expect(cx).toBeGreaterThan(0.25);
     expect(cx).toBeLessThan(0.75);
+  });
+});
+
+describe("createFaceDetector", () => {
+  it("resolve blazeface por id", async () => {
+    const det = await createFaceDetector("blazeface");
+    expect(det.id).toBe("blazeface");
+  });
+
+  it("resolve heuristic por id", async () => {
+    const det = await createFaceDetector("heuristic");
+    expect(det.id).toBe("heuristic");
   });
 });
