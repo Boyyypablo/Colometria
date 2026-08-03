@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 import { SimulationPanel } from "@/components/SimulationPanel";
+import { FeedbackPanel } from "@/components/FeedbackPanel";
 import {
   ConsultantReviewForm,
   RequestReviewButton,
@@ -31,6 +32,10 @@ export default async function AnalysisPage({ params }: Params) {
         orderBy: { createdAt: "desc" },
         take: 1,
         include: { reviewer: { select: { name: true } } },
+      },
+      feedbackEvents: {
+        orderBy: { createdAt: "asc" },
+        select: { target: true, kind: true },
       },
     },
   });
@@ -200,6 +205,25 @@ export default async function AnalysisPage({ params }: Params) {
             colors={rec?.useColors || ["#E63946", "#457B9D", "#BC6C25"]}
           />
         )}
+
+        {isOwner &&
+          (analysis.status === "READY" ||
+            analysis.status === "NEEDS_REVIEW" ||
+            analysis.status === "APPROVED") &&
+          season && (
+            <FeedbackPanel
+              analysisId={analysis.id}
+              seasonName={season.namePt}
+              clothing={rec?.clothing || []}
+              lipstick={rec?.lipstick || []}
+              eyeshadow={rec?.eyeshadow || []}
+              base={rec?.base || []}
+              initialVotes={analysis.feedbackEvents.map((e) => ({
+                target: e.target,
+                kind: e.kind as "HELPED" | "DID_NOT_HELP",
+              }))}
+            />
+          )}
 
         {isStaff && analysis.status !== "APPROVED" && (
           <ConsultantReviewForm

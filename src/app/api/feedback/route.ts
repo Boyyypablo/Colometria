@@ -40,5 +40,29 @@ export async function POST(request: Request) {
     },
   });
 
+  // Soft-label self-report na estação (consultora vence se já houver label).
+  if (
+    parsed.data.target === "season" &&
+    parsed.data.kind === "HELPED" &&
+    analysis.seasonId
+  ) {
+    const sample = await prisma.analysisSample.findUnique({
+      where: { analysisId: analysis.id },
+      select: { id: true, labelSeasonId: true, labelSource: true },
+    });
+    if (
+      sample &&
+      (!sample.labelSeasonId || sample.labelSource === "user_feedback")
+    ) {
+      await prisma.analysisSample.update({
+        where: { id: sample.id },
+        data: {
+          labelSeasonId: analysis.overrideSeasonId || analysis.seasonId,
+          labelSource: "user_feedback",
+        },
+      });
+    }
+  }
+
   return NextResponse.json({ event }, { status: 201 });
 }

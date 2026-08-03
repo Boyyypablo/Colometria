@@ -18,7 +18,7 @@ Já existe (pendente de commit quando você pedir):
 - VTO mock alinhado ao `faceBox`
 - Doc de arquitetura + testes de ROI/heuristic
 
-**Ainda não existe:** UI de feedback, BlazeFace real, treino, calibração por pessoa, métricas em produção, fila assíncrona de análise.
+**Ainda não existe:** treino tabular, calibração por pessoa (bias), métricas em produção, fila assíncrona de análise.
 
 ---
 
@@ -300,7 +300,7 @@ S ≈ 1–2 dias focados · M ≈ 3–7 dias.
 |---|---------|----------|------|
 | 1 | Commit Fase 1 foundation | **Sim — `45a55c7`** | 2026-08-02 |
 | 2 | Prioridade pós-commit | **(A) BlazeFace real** — implementação no working tree | 2026-08-02 |
-| 3 | TTL de fotos/samples | **Sim** — `PHOTO_RETENTION_DAYS=365`; purge job ainda a fazer | 2026-08-02 |
+| 3 | TTL de fotos/samples | **Sim** — `PHOTO_RETENTION_DAYS=365` + `npm run retention:purge` | 2026-08-02 |
 | 4 | Personalização começa por | **Bias de estação** (`UserColorProfile`) | 2026-08-02 |
 
 Próximo detalhe de execução: adapter BlazeFace + env `FACE_DETECTOR=blazeface` com fallback heuristic; depois UI feedback (Fase 2) e calibração de bias (Fase 3).

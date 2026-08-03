@@ -71,7 +71,7 @@ Labels gold:
 - Consentimento biométrico no upload (já existe).
 - Imagens e crops só em `UPLOAD_DIR` privado.
 - API cloud de face = **novo texto de consentimento** + DPA.
-- **TTL:** `PHOTO_RETENTION_DAYS=365` (default) — análises/imagens/samples mais antigos entram em purge (job a implementar).
+- **TTL:** `PHOTO_RETENTION_DAYS=365` (default) — `npm run retention:purge` remove análises/imagens/samples vencidos (`--dry-run`, `--days=N`).
 - Export de treino: sem email/nome; só `userId` hash opcional.
 
 ## Personalização (decisão)
