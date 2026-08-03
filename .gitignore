@@ -37,6 +37,9 @@ yarn-error.log*
 # uploads privados (imagens faciais)
 /uploads
 
+# export de treino ML
+/artifacts
+
 # docker volume leftovers
 *.log
 

@@ -2,12 +2,16 @@ import { notFound, redirect } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 import { SimulationPanel } from "@/components/SimulationPanel";
 import { FeedbackPanel } from "@/components/FeedbackPanel";
+import { SkinCorrectionSection } from "@/components/SkinCorrectionSection";
 import {
   ConsultantReviewForm,
   RequestReviewButton,
 } from "@/components/ReviewActions";
 import { auth } from "@/lib/auth";
+import { buildSkinCorrection } from "@/lib/color/skin-correction";
+import { formatConfidence } from "@/lib/color/confidence";
 import { prisma } from "@/lib/db/prisma";
+import type { SkinCorrectionBlock } from "@/lib/color/skin-correction";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -57,7 +61,19 @@ export default async function AnalysisPage({ params }: Params) {
     lipstick?: Array<{ hex: string; label: string }>;
     eyeshadow?: Array<{ hex: string; label: string }>;
     base?: Array<{ hex: string; label: string }>;
+    skinCorrection?: SkinCorrectionBlock;
   } | null;
+
+  const features = analysis.features as { temperatureScore?: number } | null;
+  const skinCorrection: SkinCorrectionBlock | null =
+    rec?.skinCorrection ??
+    (season
+      ? buildSkinCorrection({
+          temperature:
+            season.temperature === "cool" ? "cool" : "warm",
+          temperatureScore: features?.temperatureScore,
+        })
+      : null);
 
   const seasons = await prisma.seasonPalette.findMany({
     select: { id: true, namePt: true },
@@ -70,6 +86,11 @@ export default async function AnalysisPage({ params }: Params) {
     detectorProvider?: string;
     usedFaceFallback?: boolean;
   } | null;
+
+  const confidenceUi =
+    analysis.confidence != null
+      ? formatConfidence(analysis.confidence)
+      : null;
 
   return (
     <main>
@@ -131,10 +152,16 @@ export default async function AnalysisPage({ params }: Params) {
               <p className="text-sm">
                 Confiança:{" "}
                 <strong>
-                  {analysis.confidence != null
-                    ? `${Math.round(analysis.confidence * 100)}%`
+                  {confidenceUi
+                    ? `${confidenceUi.percent}% · ${confidenceUi.band}`
                     : "—"}
                 </strong>
+                {confidenceUi ? (
+                  <span className="text-[var(--muted)]">
+                    {" "}
+                    ({confidenceUi.note})
+                  </span>
+                ) : null}
               </p>
               <p className="text-sm text-[var(--muted)]">
                 Contexto: {analysis.context}
@@ -177,6 +204,8 @@ export default async function AnalysisPage({ params }: Params) {
           </div>
         </div>
 
+        {skinCorrection && <SkinCorrectionSection block={skinCorrection} />}
+
         <div className="grid gap-4 md:grid-cols-3">
           {(
             [
@@ -218,6 +247,11 @@ export default async function AnalysisPage({ params }: Params) {
               lipstick={rec?.lipstick || []}
               eyeshadow={rec?.eyeshadow || []}
               base={rec?.base || []}
+              corrections={(skinCorrection?.items || []).map((i) => ({
+                hex: i.hex,
+                label: i.label,
+                target: i.target,
+              }))}
               initialVotes={analysis.feedbackEvents.map((e) => ({
                 target: e.target,
                 kind: e.kind as "HELPED" | "DID_NOT_HELP",

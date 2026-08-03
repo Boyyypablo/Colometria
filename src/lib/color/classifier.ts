@@ -1,5 +1,6 @@
 import sharp from "sharp";
 import { chromaFromLab, median, rgbToLab } from "./cielab";
+import { shouldNeedsReview } from "./confidence";
 import { createColorPredictor } from "./predictor";
 import type {
   ClassificationResult,
@@ -189,8 +190,13 @@ export async function analyzeImageBuffer(
 
   const predictor = createColorPredictor();
   const { seasonId, undertoneLabel, confidence } = predictor.predict(features);
-  const needsReview =
-    confidence < 0.45 || !faceLikeDetected || lightingWarning || face.usedFallback;
+  const needsReview = shouldNeedsReview({
+    confidence,
+    temperatureScore: features.temperatureScore,
+    faceLikeDetected,
+    lightingWarning,
+    usedFaceFallback: face.usedFallback,
+  });
 
   const photoQuality: PhotoQuality = {
     width,
@@ -257,7 +263,13 @@ export function classifyFromLab(
     undertoneLabel,
     features,
     photoQuality,
-    needsReview: confidence < 0.45,
+    needsReview: shouldNeedsReview({
+      confidence,
+      temperatureScore: features.temperatureScore,
+      faceLikeDetected: true,
+      lightingWarning: false,
+      usedFaceFallback: false,
+    }),
     predictorId: predictor.id,
   };
 }

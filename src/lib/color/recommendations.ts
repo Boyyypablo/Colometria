@@ -1,4 +1,5 @@
 import { SEASON_PALETTES } from "../../../data/palettes/seasons";
+import { buildSkinCorrection } from "./skin-correction";
 import type { SeasonDefinition } from "./types";
 
 export function getSeasonById(id: string): SeasonDefinition | undefined {
@@ -8,10 +9,16 @@ export function getSeasonById(id: string): SeasonDefinition | undefined {
 export function buildRecommendations(
   season: SeasonDefinition,
   context: "trabalho" | "casual" | "noite" = "casual",
+  opts?: { temperatureScore?: number },
 ) {
   const clothing = season.clothing.filter(
     (c) => !c.context || c.context.includes(context),
   );
+  const skinCorrection = buildSkinCorrection({
+    temperature: season.temperature,
+    temperatureScore: opts?.temperatureScore,
+  });
+
   return {
     seasonId: season.id,
     seasonName: season.namePt,
@@ -26,8 +33,9 @@ export function buildRecommendations(
     lipstick: season.lipstick,
     eyeshadow: season.eyeshadow,
     base: season.base,
+    skinCorrection,
     ethicalNote:
-      "Esta análise é uma orientação baseada em atributos cromáticos (matiz, valor e croma). Não é uma regra absoluta — use como ferramenta de harmonia, não de restrição.",
+      "Harmonia sazonal e correção da pele são camadas distintas: a estação orienta cores que combinam; a correção ajuda a disfarçar olheiras, manchas e vermelhidão. Não é regra absoluta nem diagnóstico dermatológico.",
     context,
   };
 }

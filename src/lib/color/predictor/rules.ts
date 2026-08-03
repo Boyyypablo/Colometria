@@ -1,5 +1,6 @@
 import type { ColorFeatures } from "../types";
 import type { ColorPredictor } from "./types";
+import { calibrateRulesConfidence } from "../confidence";
 
 /** Árvore de regras atual — baseline estável até o modelo tabular existir. */
 export class RulesColorPredictor implements ColorPredictor {
@@ -47,21 +48,15 @@ export class RulesColorPredictor implements ColorPredictor {
       else seasonId = "true_summer";
     }
 
-    const tempStrength = Math.min(1, Math.abs(features.temperatureScore) / 15);
-    const sampleStrength = Math.min(1, features.sampleCount / 800);
-    const skinStrength = Math.min(1, features.skinPixelRatio / 0.08);
-    const faceBoost = features.faceBox && !features.detectorProvider.includes("fallback")
-      ? 0.05
-      : 0;
-    const confidence = Number(
-      Math.min(
-        1,
-        0.35 * tempStrength +
-          0.35 * sampleStrength +
-          0.3 * skinStrength +
-          faceBoost,
-      ).toFixed(3),
-    );
+    const confidence = calibrateRulesConfidence({
+      temperatureScore: features.temperatureScore,
+      sampleCount: features.sampleCount,
+      skinPixelRatio: features.skinPixelRatio,
+      detectorProvider: features.detectorProvider,
+      hasReliableFace: Boolean(
+        features.faceBox && !features.detectorProvider.includes("fallback"),
+      ),
+    });
 
     return { seasonId, undertoneLabel, confidence };
   }

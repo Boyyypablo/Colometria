@@ -25,6 +25,11 @@ export async function AppHeader() {
                 Consultora
               </Link>
             )}
+            {session.user.role === "ADMIN" && (
+              <Link href="/admin/ml" className="opacity-80 hover:opacity-100">
+                ML
+              </Link>
+            )}
             <form
               action={async () => {
                 "use server";

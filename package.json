@@ -15,6 +15,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset --force",
     "retention:purge": "tsx scripts/purge-expired.ts",
+    "ml:export": "tsx scripts/ml-export.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {

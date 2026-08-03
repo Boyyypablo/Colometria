@@ -16,7 +16,7 @@ Documento irmão (roadmap detalhado): [`colorimetry-ml-roadmap.md`](./colorimetr
 |------|--------|---------|
 | 1 | **feita (commit)** | Face detect pluggable + ROI + features tipadas + stubs schema |
 | 1b | em curso | BlazeFace real (`FACE_DETECTOR=blazeface`) |
-| 2 | planejada | Dataset rotulado operacional + UI de feedback + export treino |
+| 2 | **parcial** | Feedback UI + `ml:export` + painel `/admin/ml` + correção de pele |
 | 3 | planejada | Modelo tabular v1 + bias de estação (`UserColorProfile`) + retreino |
 
 ## Contrato de troca (adapters)
@@ -83,3 +83,14 @@ Começa por **bias de estação** via `UserColorProfile` (temperature/value/chro
 1. Dashboard interno (ou query SQL) semanal: faceDetected %, NEEDS_REVIEW %, concordância consultora.
 2. Abaixo do limiar → trocar `FACE_DETECTOR` / investigar ROI.
 3. Retreino (Fase 3): `npm run ml:train` → nova `ModelVersion` → activate só após eval holdout ≥ baseline `rules`.
+
+## Correção da pele
+
+Camada separada da harmonia sazonal (`buildSkinCorrection`): corretivos para olheiras/manchas/vermelhidão por subtom. Feedback com target `correction:…`.
+
+## Confiabilidade
+
+- Confiança do `rules` calibrada e **capada em 85%** (sem selo consultora).
+- `NEEDS_REVIEW` se confiança &lt; 55%, luz ruim, fallback de face ou subtom ambíguo (|temp| &lt; 3).
+- Export: `npm run ml:export` → `artifacts/ml/YYYYMMDD/`.
+- Painel: `/admin/ml` (role ADMIN).

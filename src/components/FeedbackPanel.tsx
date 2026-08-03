@@ -9,6 +9,7 @@ export type FeedbackVote = {
 };
 
 type RecItem = { hex: string; label: string };
+type CorrectionItem = { hex: string; label: string; target: string };
 
 type Props = {
   analysisId: string;
@@ -17,6 +18,7 @@ type Props = {
   lipstick: RecItem[];
   eyeshadow: RecItem[];
   base: RecItem[];
+  corrections?: CorrectionItem[];
   initialVotes: FeedbackVote[];
 };
 
@@ -82,6 +84,7 @@ export function FeedbackPanel({
   lipstick,
   eyeshadow,
   base,
+  corrections = [],
   initialVotes,
 }: Props) {
   const router = useRouter();
@@ -165,6 +168,25 @@ export function FeedbackPanel({
           </div>
         ),
       )}
+
+      {corrections.length > 0 ? (
+        <div className="space-y-1">
+          <h3 className="text-sm font-semibold">Correção da pele</h3>
+          <ul>
+            {corrections.map((item) => (
+              <VoteButtons
+                key={item.target}
+                target={item.target}
+                label={item.label}
+                hex={item.hex}
+                current={votes[item.target]}
+                busy={pending || busyTarget === item.target}
+                onVote={onVote}
+              />
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       <label className="block space-y-1 text-sm">
         <span className="text-[var(--muted)]">Nota opcional (vai no próximo voto)</span>

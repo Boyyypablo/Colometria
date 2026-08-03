@@ -67,7 +67,10 @@ export async function POST(request: Request) {
     analysis.context === "trabalho" || analysis.context === "noite"
       ? analysis.context
       : "casual";
-  const recommendations = buildRecommendations(season, context);
+  const features = analysis.features as { temperatureScore?: number } | null;
+  const recommendations = buildRecommendations(season, context, {
+    temperatureScore: features?.temperatureScore,
+  });
 
   const [review, updated] = await prisma.$transaction([
     prisma.consultantReview.create({

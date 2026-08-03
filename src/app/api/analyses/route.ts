@@ -69,7 +69,9 @@ export async function POST(request: Request) {
       throw new Error("Estação não encontrada");
     }
 
-    const recommendations = buildRecommendations(season, context);
+    const recommendations = buildRecommendations(season, context, {
+      temperatureScore: result.features.temperatureScore,
+    });
     const status = result.needsReview ? "NEEDS_REVIEW" : "READY";
 
     const analysis = await prisma.analysis.update({
