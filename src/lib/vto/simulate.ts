@@ -13,12 +13,13 @@ function hexToRgb(hex: string) {
   };
 }
 
-/** Mock local: aplica faixa de cor sob o terço inferior (drape) ou overlay na região do torso. */
+/** Mock local: drape sob o queixo (usa faceBox se existir) ou overlay no torso. */
 async function runMockSimulation(
   inputRelative: string,
   userId: string,
   hex: string,
   type: SimulationType,
+  faceBox?: { x: number; y: number; width: number; height: number } | null,
 ): Promise<string> {
   const input = await readUpload(inputRelative);
   const { r, g, b } = hexToRgb(hex);
@@ -27,15 +28,42 @@ async function runMockSimulation(
   const width = meta.width ?? 800;
   const height = meta.height ?? 1000;
 
-  const overlayTop =
-    type === "COLOR_DRAPE"
-      ? Math.floor(height * 0.55)
-      : Math.floor(height * 0.45);
-  const overlayHeight = height - overlayTop;
+  let overlayTop: number;
+  let overlayHeight: number;
+  let overlayLeft = 0;
+  let overlayWidth = width;
+
+  if (type === "COLOR_DRAPE" && faceBox) {
+    // Faixa sob o queixo do bbox detectado
+    overlayTop = Math.floor((faceBox.y + faceBox.height * 0.72) * height);
+    overlayHeight = Math.max(24, Math.floor(faceBox.height * 0.35 * height));
+    overlayLeft = Math.floor(faceBox.x * width);
+    overlayWidth = Math.max(24, Math.floor(faceBox.width * width));
+  } else if (type === "COLOR_DRAPE") {
+    overlayTop = Math.floor(height * 0.55);
+    overlayHeight = height - overlayTop;
+  } else if (faceBox) {
+    overlayTop = Math.floor((faceBox.y + faceBox.height * 0.85) * height);
+    overlayHeight = Math.max(40, height - overlayTop);
+    overlayLeft = Math.floor(Math.max(0, faceBox.x - faceBox.width * 0.15) * width);
+    overlayWidth = Math.min(
+      width - overlayLeft,
+      Math.floor(faceBox.width * 1.3 * width),
+    );
+  } else {
+    overlayTop = Math.floor(height * 0.45);
+    overlayHeight = height - overlayTop;
+  }
+
+  // Clamp
+  overlayTop = Math.min(Math.max(0, overlayTop), height - 1);
+  overlayHeight = Math.min(overlayHeight, height - overlayTop);
+  overlayLeft = Math.min(Math.max(0, overlayLeft), width - 1);
+  overlayWidth = Math.min(overlayWidth, width - overlayLeft);
 
   const overlay = await sharp({
     create: {
-      width,
+      width: overlayWidth,
       height: overlayHeight,
       channels: 4,
       background: { r, g, b, alpha: type === "COLOR_DRAPE" ? 0.72 : 0.55 },
@@ -45,7 +73,7 @@ async function runMockSimulation(
     .toBuffer();
 
   const composed = await base
-    .composite([{ input: overlay, top: overlayTop, left: 0 }])
+    .composite([{ input: overlay, top: overlayTop, left: overlayLeft }])
     .jpeg({ quality: 88 })
     .toBuffer();
 
@@ -105,13 +133,21 @@ async function runFalSimulation(
 }
 
 export async function processSimulationJob(jobId: string): Promise<void> {
-  const job = await prisma.simulationJob.findUnique({ where: { id: jobId } });
+  const job = await prisma.simulationJob.findUnique({
+    where: { id: jobId },
+    include: { analysis: { select: { features: true } } },
+  });
   if (!job) return;
 
   await prisma.simulationJob.update({
     where: { id: jobId },
     data: { status: "PROCESSING" },
   });
+
+  const features = job.analysis.features as {
+    faceBox?: { x: number; y: number; width: number; height: number } | null;
+  } | null;
+  const faceBox = features?.faceBox ?? null;
 
   try {
     const provider = process.env.VTO_PROVIDER || "mock";
@@ -128,6 +164,7 @@ export async function processSimulationJob(jobId: string): Promise<void> {
             job.userId,
             job.targetColorHex,
             job.type,
+            faceBox,
           );
 
     await prisma.simulationJob.update({

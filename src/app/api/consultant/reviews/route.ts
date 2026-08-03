@@ -96,5 +96,14 @@ export async function POST(request: Request) {
     }),
   ]);
 
+  // Label gold para treino (Fase 2)
+  await prisma.analysisSample.updateMany({
+    where: { analysisId },
+    data: {
+      labelSeasonId: parsed.data.overrideSeasonId,
+      labelSource: "consultant_review",
+    },
+  });
+
   return NextResponse.json({ review, analysis: updated });
 }

@@ -82,11 +82,30 @@ export async function POST(request: Request) {
         photoQuality: result.photoQuality,
         undertoneLabel: result.undertoneLabel,
         recommendations,
+        detectorProvider: result.photoQuality.detectorProvider,
+        predictorId: result.predictorId,
       },
       include: {
         season: true,
       },
     });
+
+    // Amostra para dataset de treino (Fase 2) — não bloqueia a resposta se falhar
+    try {
+      await prisma.analysisSample.create({
+        data: {
+          analysisId: analysis.id,
+          userId: session.user.id,
+          featureSchemaVersion: result.features.featureSchemaVersion,
+          detectorProvider: result.photoQuality.detectorProvider,
+          predictorId: result.predictorId,
+          features: result.features,
+          predictedSeasonId: result.seasonId,
+        },
+      });
+    } catch {
+      // ignore duplicate / schema lag
+    }
 
     return NextResponse.json({ analysis });
   } catch (err) {

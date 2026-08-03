@@ -50,3 +50,14 @@ npm test
 ## LGPD
 
 Cadastro exige consentimento LGPD; upload exige consentimento biométrico. Imagens não vão para pasta pública.
+
+## Colorimetria / IA
+
+Plano vivo (face detect pluggable + modelo treinável): [`docs/architecture/colorimetry-ml.md`](docs/architecture/colorimetry-ml.md).
+
+```bash
+# .env
+FACE_DETECTOR=heuristic   # trocar para blazeface|onnx-yunet quando o adapter estiver pronto
+COLOR_PREDICTOR=rules     # trocar para tabular-v1 após treino
+```
+

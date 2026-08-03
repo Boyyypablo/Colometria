@@ -30,20 +30,42 @@ export type LabColor = {
   b: number;
 };
 
-export type ColorFeatures = {
+export type FaceRoiLab = {
+  kind: string;
   lab: LabColor;
+  sampleCount: number;
+};
+
+export type ColorFeatures = {
+  /** Schema version — bump when fields change for ML training. */
+  featureSchemaVersion: 1;
+  lab: LabColor;
+  /** Lab agregado priorizando bochechas (subtom). */
+  labUndertone: LabColor;
   temperatureScore: number;
   valueScore: number;
   chromaScore: number;
   contrastScore: number;
   skinPixelRatio: number;
   sampleCount: number;
+  detectorProvider: string;
+  faceBox: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    score: number;
+  } | null;
+  roiLabs: FaceRoiLab[];
 };
 
 export type PhotoQuality = {
   width: number;
   height: number;
   faceLikeDetected: boolean;
+  faceDetected: boolean;
+  detectorProvider: string;
+  usedFaceFallback: boolean;
   lightingWarning: boolean;
   warnings: string[];
 };
@@ -55,4 +77,5 @@ export type ClassificationResult = {
   features: ColorFeatures;
   photoQuality: PhotoQuality;
   needsReview: boolean;
+  predictorId: string;
 };

@@ -32,6 +32,11 @@ enum SimulationType {
   BLOUSE_TONE
 }
 
+enum FeedbackKind {
+  HELPED
+  DID_NOT_HELP
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -47,6 +52,9 @@ model User {
   simulationJobs SimulationJob[]
   accounts       Account[]
   sessions       Session[]
+  colorProfile   UserColorProfile?
+  feedbackEvents FeedbackEvent[]
+  analysisSamples AnalysisSample[]
 }
 
 model Account {
@@ -119,6 +127,10 @@ model Analysis {
   recommendations    Json?
   context            String         @default("casual")
   consultantApproved Boolean        @default(false)
+  /// Provider de face usado nesta análise (heuristic|blazeface|...).
+  detectorProvider   String?
+  /// Preditor de estação (rules|tabular-v1|...).
+  predictorId        String?
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
 
@@ -127,9 +139,81 @@ model Analysis {
   overrideSeason SeasonPalette?     @relation("OverrideSeason", fields: [overrideSeasonId], references: [id])
   reviews        ConsultantReview[]
   simulations    SimulationJob[]
+  sample         AnalysisSample?
+  feedbackEvents FeedbackEvent[]
 
   @@index([userId, createdAt])
   @@index([status])
+}
+
+/// Features canônicas versionadas para treino (Fase 2/3).
+model AnalysisSample {
+  id                   String   @id @default(cuid())
+  analysisId           String   @unique
+  userId               String
+  featureSchemaVersion Int      @default(1)
+  detectorProvider     String
+  predictorId          String
+  features             Json
+  predictedSeasonId    String?
+  /// Preenchido quando consultora override / feedback fecha o label.
+  labelSeasonId        String?
+  labelSource          String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  analysis Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([labelSeasonId])
+}
+
+/// O que ajudou ou não para esta pessoa (Fase 2).
+model FeedbackEvent {
+  id         String       @id @default(cuid())
+  userId     String
+  analysisId String
+  kind       FeedbackKind
+  /// Ex.: lipstick:Coral, clothing:#FF6B35, season
+  target     String
+  note       String?
+  createdAt  DateTime     @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analysis Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([analysisId])
+}
+
+/// Calibração por pessoa (Fase 3) — bias sobre scores globais.
+model UserColorProfile {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  temperatureBias    Float    @default(0)
+  valueBias          Float    @default(0)
+  chromaBias         Float    @default(0)
+  preferredSeasonId  String?
+  sampleCount        Int      @default(0)
+  lastCalibratedAt   DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Artefato de modelo treinado (Fase 3).
+model ModelVersion {
+  id          String   @id @default(cuid())
+  name        String
+  predictorId String   @default("tabular-v1")
+  artifactPath String?
+  metrics     Json?
+  active      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([predictorId, active])
 }
 
 model ConsultantReview {

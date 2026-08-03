@@ -59,7 +59,12 @@ export default async function AnalysisPage({ params }: Params) {
     orderBy: { namePt: "asc" },
   });
 
-  const quality = analysis.photoQuality as { warnings?: string[] } | null;
+  const quality = analysis.photoQuality as {
+    warnings?: string[];
+    faceDetected?: boolean;
+    detectorProvider?: string;
+    usedFaceFallback?: boolean;
+  } | null;
 
   return (
     <main>
@@ -129,6 +134,20 @@ export default async function AnalysisPage({ params }: Params) {
               <p className="text-sm text-[var(--muted)]">
                 Contexto: {analysis.context}
               </p>
+              {quality?.detectorProvider && (
+                <p className="text-sm text-[var(--muted)]">
+                  Face:{" "}
+                  <strong>
+                    {quality.faceDetected
+                      ? "detectado"
+                      : quality.usedFaceFallback
+                        ? "estimativa"
+                        : "não detectado"}
+                  </strong>
+                  {" · "}
+                  {quality.detectorProvider}
+                </p>
+              )}
               {rec?.ethicalNote && (
                 <p className="mt-3 rounded-xl bg-[rgba(154,52,18,0.06)] p-3 text-sm leading-relaxed">
                   {rec.ethicalNote}
