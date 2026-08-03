@@ -1,0 +1,52 @@
+import Link from "next/link";
+import { auth, signOut } from "@/lib/auth";
+
+export async function AppHeader() {
+  const session = await auth();
+  const isStaff =
+    session?.user?.role === "CONSULTANT" || session?.user?.role === "ADMIN";
+
+  return (
+    <header className="shell flex items-center justify-between py-5">
+      <Link href={session ? "/dashboard" : "/"} className="font-display text-2xl tracking-tight">
+        Colometria
+      </Link>
+      <nav className="flex items-center gap-3 text-sm">
+        {session ? (
+          <>
+            <Link href="/dashboard" className="opacity-80 hover:opacity-100">
+              Minhas análises
+            </Link>
+            <Link href="/analyze" className="opacity-80 hover:opacity-100">
+              Nova análise
+            </Link>
+            {isStaff && (
+              <Link href="/consultant" className="opacity-80 hover:opacity-100">
+                Consultora
+              </Link>
+            )}
+            <form
+              action={async () => {
+                "use server";
+                await signOut({ redirectTo: "/" });
+              }}
+            >
+              <button type="submit" className="btn btn-ghost text-sm">
+                Sair
+              </button>
+            </form>
+          </>
+        ) : (
+          <>
+            <Link href="/login" className="btn btn-ghost text-sm">
+              Entrar
+            </Link>
+            <Link href="/register" className="btn btn-primary text-sm">
+              Criar conta
+            </Link>
+          </>
+        )}
+      </nav>
+    </header>
+  );
+}

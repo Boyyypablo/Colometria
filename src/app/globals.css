@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f7f2eb;
+  --bg-2: #efe6d9;
+  --ink: #1c1917;
+  --muted: #78716c;
+  --accent: #9a3412;
+  --accent-soft: #c2410c;
+  --card: rgba(255, 252, 248, 0.72);
+  --line: rgba(28, 25, 23, 0.12);
+  --ok: #166534;
+  --warn: #a16207;
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+}
+
+body {
+  min-height: 100vh;
+  color: var(--ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #f0d9c4 0%, transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, #d9e2ec 0%, transparent 50%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.shell {
+  width: min(1100px, calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+  border-radius: 18px;
+  padding: 1.25rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.7rem 1.2rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: transform 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff7ed;
+}
+
+.btn-primary:hover {
+  background: var(--accent-soft);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--line);
+}
+
+.input {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fffdf9;
+  padding: 0.75rem 0.9rem;
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(154, 52, 18, 0.15);
+}
+
+.label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0.35rem;
+}
+
+.swatch {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(154, 52, 18, 0.1);
+  color: var(--accent);
+}

@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "skills": {
+    "deslop": {
+      "source": "pedronauck/skills",
+      "sourceType": "github",
+      "skillPath": "skills/mine/deslop/SKILL.md",
+      "computedHash": "eaf00b5bfc4f16fa6b983de1ec2294611ea7ff12d0604d92730658d9a350209c"
+    },
+    "no-workarounds": {
+      "source": "pedronauck/skills",
+      "sourceType": "github",
+      "skillPath": "skills/mine/no-workarounds/SKILL.md",
+      "computedHash": "18d6cf706e1e11ca0a012deb837f75003493153258adc45baa769874a916ddc5"
+    },
+    "prisma-cli": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-cli/SKILL.md",
+      "computedHash": "f41a5af7f25a686631a0e2a8b7031f3c57e0e06b81932f6389736d930d05fa54"
+    },
+    "prisma-client-api": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-client-api/SKILL.md",
+      "computedHash": "7825288518e0722b497de03367a1aee477fc61b0b488d456b9b6257294c005ae"
+    },
+    "prisma-compute": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-compute/SKILL.md",
+      "computedHash": "b2e1d4b2fda6f523b2eb4a38e25c12b7800e4a2801a97b750e95df8131addec0"
+    },
+    "prisma-database-setup": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-database-setup/SKILL.md",
+      "computedHash": "0911d9454bd48df3badd23a50fd90a280eabb15dcbd472c14e7b729075dadefb"
+    },
+    "prisma-driver-adapter-implementation": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-driver-adapter-implementation/SKILL.md",
+      "computedHash": "86034220752575ac0551aa3d579ed0bdfb90616000ae5703bf11e47b655ec7d1"
+    },
+    "prisma-mongodb-upgrade": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-mongodb-upgrade/SKILL.md",
+      "computedHash": "f9ba440e88ca4cec9801d04762296e29e99ca08cb8a8156e4f783ecf90279c8f"
+    },
+    "prisma-postgres": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-postgres/SKILL.md",
+      "computedHash": "66dc44132bdb85cfa369e21a8512c6427c574f5186c8631d345aca9b111091c1"
+    },
+    "prisma-postgres-setup": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-postgres-setup/SKILL.md",
+      "computedHash": "c89d3aa91285d8e4964fcaa5238c99a3d3c20b617e032e731cf632330a85a5a6"
+    },
+    "prisma-upgrade-v7": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-upgrade-v7/SKILL.md",
+      "computedHash": "dcc6c71adca6b22f37c5bda5ac7fd63c3bb59495596a22e06a29c7c85371558f"
+    },
+    "qa-execution": {
+      "source": "pedronauck/skills",
+      "sourceType": "github",
+      "skillPath": "skills/mine/qa-execution/SKILL.md",
+      "computedHash": "c2f22ae3abc79e5a02b66c84694ebff46f572350ae1b39c12ed9ac398e6c2713"
+    },
+    "qa-report": {
+      "source": "pedronauck/skills",
+      "sourceType": "github",
+      "skillPath": "skills/mine/qa-report/SKILL.md",
+      "computedHash": "c8731acea2295fc940689b14e58d2ce7bfc293c85b206ca3c1f810321bc79170"
+    },
+    "writing-agents-md": {
+      "source": "pedronauck/skills",
+      "sourceType": "github",
+      "skillPath": "skills/mine/writing-agents-md/SKILL.md",
+      "computedHash": "e947bbe4d513b521df3de680c12b8046ab62c5c9faecb35ba9fc1f7b400c1a4f"
+    },
+    "writing-skills": {
+      "source": "pedronauck/skills",
+      "sourceType": "github",
+      "skillPath": "skills/mine/writing-skills/SKILL.md",
+      "computedHash": "c1346a790818edf3098301bceaa734a0fbd7dd0986a4b9c4cd52597507d3e94a"
+    }
+  }
+}
