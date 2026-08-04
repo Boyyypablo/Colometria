@@ -1,5 +1,9 @@
-import { auth } from "@/lib/auth";
+import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
+import { authConfig } from "@/lib/auth.config";
+
+/** Middleware Edge: só authConfig (sem Prisma/bcrypt). */
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
@@ -22,18 +26,17 @@ export default auth((req) => {
     return NextResponse.redirect(url);
   }
 
+  const role = req.auth?.user?.role;
+
   if (
     pathname.startsWith("/consultant") &&
-    req.auth?.user?.role !== "CONSULTANT" &&
-    req.auth?.user?.role !== "ADMIN"
+    role !== "CONSULTANT" &&
+    role !== "ADMIN"
   ) {
     return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
   }
 
-  if (
-    pathname.startsWith("/admin") &&
-    req.auth?.user?.role !== "ADMIN"
-  ) {
+  if (pathname.startsWith("/admin") && role !== "ADMIN") {
     return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
   }
 
