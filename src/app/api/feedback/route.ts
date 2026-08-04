@@ -14,7 +14,7 @@ const schema = z.object({
 export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Não autenticada." }, { status: 401 });
+    return NextResponse.json({ error: "Faça login para continuar." }, { status: 401 });
   }
 
   const body = await request.json();

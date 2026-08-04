@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db/prisma";
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Não autenticada." }, { status: 401 });
+    return NextResponse.json({ error: "Faça login para continuar." }, { status: 401 });
   }
 
   const analyses = await prisma.analysis.findMany({

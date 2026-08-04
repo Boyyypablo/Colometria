@@ -6,6 +6,9 @@ export type ColorSwatch = {
   hex: string;
   label: string;
   context?: Array<"trabalho" | "casual" | "noite">;
+  /** Preenchido após ranking personalizado (Plano B). */
+  score?: number;
+  why?: string;
 };
 
 export type SeasonDefinition = {
@@ -38,14 +41,20 @@ export type FaceRoiLab = {
 
 export type ColorFeatures = {
   /** Schema version — bump when fields change for ML training. */
-  featureSchemaVersion: 1;
+  featureSchemaVersion: 1 | 2;
   lab: LabColor;
   /** Lab agregado priorizando bochechas (subtom). */
   labUndertone: LabColor;
+  /** Lab do cabelo (se amostrado). */
+  labHair: LabColor | null;
+  /** Lab aproximado da região dos olhos (se amostrado). */
+  labEyes: LabColor | null;
   temperatureScore: number;
   valueScore: number;
   chromaScore: number;
   contrastScore: number;
+  /** Como o contraste foi derivado. */
+  contrastSource: "skin_l" | "skin_hair" | "skin_eyes";
   skinPixelRatio: number;
   sampleCount: number;
   detectorProvider: string;
@@ -67,7 +76,13 @@ export type PhotoQuality = {
   detectorProvider: string;
   usedFaceFallback: boolean;
   lightingWarning: boolean;
+  /** Consistência entre ROIs (testa vs bochecha). */
+  roiConsistencyWarning: boolean;
+  /** boa | aceitavel | ruim */
+  qualityBand: "boa" | "aceitavel" | "ruim";
   warnings: string[];
+  /** Dicas do checklist que falharam na análise automática. */
+  failedTips: string[];
 };
 
 export type ClassificationResult = {

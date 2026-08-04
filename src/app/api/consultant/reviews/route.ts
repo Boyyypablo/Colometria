@@ -13,10 +13,10 @@ const schema = z.object({
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Não autenticada." }, { status: 401 });
+    return NextResponse.json({ error: "Faça login para continuar." }, { status: 401 });
   }
   if (session.user.role !== "CONSULTANT" && session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
   }
 
   const queue = await prisma.analysis.findMany({
@@ -36,10 +36,10 @@ export async function GET() {
 export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Não autenticada." }, { status: 401 });
+    return NextResponse.json({ error: "Faça login para continuar." }, { status: 401 });
   }
   if (session.user.role !== "CONSULTANT" && session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
   }
 
   const body = await request.json();
@@ -67,9 +67,18 @@ export async function POST(request: Request) {
     analysis.context === "trabalho" || analysis.context === "noite"
       ? analysis.context
       : "casual";
-  const features = analysis.features as { temperatureScore?: number } | null;
+  const features = analysis.features as {
+    temperatureScore?: number;
+    labUndertone?: { L: number; a: number; b: number };
+    valueScore?: number;
+    contrastScore?: number;
+  } | null;
   const recommendations = buildRecommendations(season, context, {
     temperatureScore: features?.temperatureScore,
+    goals: analysis.goals,
+    skinLab: features?.labUndertone,
+    valueScore: features?.valueScore,
+    contrastScore: features?.contrastScore,
   });
 
   const [review, updated] = await prisma.$transaction([

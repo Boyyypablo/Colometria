@@ -14,7 +14,25 @@ import {
   detectFaceWithFallback,
   type FaceRoi,
 } from "@/lib/vision/face";
-import { isSkinPixel } from "@/lib/vision/face/providers/heuristic";
+import {
+  isEyePixel,
+  isHairPixel,
+  isSkinPixel,
+} from "@/lib/vision/face/providers/heuristic";
+
+type SampleMode = "skin" | "hair" | "eye";
+
+function pixelFilter(mode: SampleMode) {
+  if (mode === "hair") return isHairPixel;
+  if (mode === "eye") return isEyePixel;
+  return isSkinPixel;
+}
+
+function modeForRoi(kind: string): SampleMode {
+  if (kind === "hair") return "hair";
+  if (kind === "leftEye" || kind === "rightEye") return "eye";
+  return "skin";
+}
 
 async function sampleRoiLabs(
   buffer: Buffer,
@@ -27,6 +45,9 @@ async function sampleRoiLabs(
   for (const roi of rois) {
     const px = boxToPixels(roi, width, height);
     if (px.width < 4 || px.height < 4) continue;
+    const mode = modeForRoi(roi.kind);
+    const accept = pixelFilter(mode);
+    const minSamples = mode === "skin" ? 8 : 5;
 
     try {
       const { data, info } = await sharp(buffer)
@@ -43,11 +64,11 @@ async function sampleRoiLabs(
         const r = data[i]!;
         const g = data[i + 1]!;
         const b = data[i + 2]!;
-        if (!isSkinPixel(r, g, b)) continue;
+        if (!accept(r, g, b)) continue;
         labs.push(rgbToLab(r, g, b));
       }
 
-      if (labs.length < 8) continue;
+      if (labs.length < minSamples) continue;
       results.push({
         kind: roi.kind,
         lab: {
@@ -80,6 +101,35 @@ function undertoneLabFromRois(
   };
 }
 
+function medianLab(items: FaceRoiLab[]): LabColor | null {
+  if (items.length === 0) return null;
+  return {
+    L: median(items.map((c) => c.lab.L)),
+    a: median(items.map((c) => c.lab.a)),
+    b: median(items.map((c) => c.lab.b)),
+  };
+}
+
+function assessQualityBand(input: {
+  lightingWarning: boolean;
+  faceLikeDetected: boolean;
+  usedFaceFallback: boolean;
+  roiConsistencyWarning: boolean;
+  resolutionLow: boolean;
+  skinPixelRatio: number;
+}): PhotoQuality["qualityBand"] {
+  let score = 3;
+  if (input.lightingWarning) score -= 1;
+  if (!input.faceLikeDetected) score -= 2;
+  if (input.usedFaceFallback) score -= 1;
+  if (input.roiConsistencyWarning) score -= 1;
+  if (input.resolutionLow) score -= 1;
+  if (input.skinPixelRatio < 0.04) score -= 1;
+  if (score >= 3) return "boa";
+  if (score >= 1) return "aceitavel";
+  return "ruim";
+}
+
 export async function analyzeImageBuffer(
   buffer: Buffer,
 ): Promise<ClassificationResult> {
@@ -89,8 +139,11 @@ export async function analyzeImageBuffer(
   const height = meta.height ?? 0;
 
   const warnings: string[] = [];
-  if (width < 400 || height < 400) {
+  const failedTips: string[] = [];
+  const resolutionLow = width < 400 || height < 400;
+  if (resolutionLow) {
     warnings.push("Resolução baixa — prefira fotos com pelo menos 800px.");
+    failedTips.push("Foto com boa resolução (≥800px)");
   }
 
   const face = await detectFaceWithFallback(buffer, width, height);
@@ -135,14 +188,19 @@ export async function analyzeImageBuffer(
     warnings.push(
       "Iluminação possivelmente irregular — use luz natural frontal neutra.",
     );
+    failedTips.push("Luz natural frontal (perto da janela, sem contraluz)");
   }
 
   const faceDetected = Boolean(face.faces.length > 0 && !face.usedFallback);
   const faceLikeDetected = faceDetected || skinCount >= 80;
   if (!faceLikeDetected) {
     warnings.push(
-      "Poucos pixels de pele / rosto não localizado — centralize o rosto sem maquiagem pesada.",
+      "Rosto pouco visível — centralize o rosto, sem maquiagem pesada.",
     );
+    failedTips.push("Rosto centralizado, sem filtro nem maquiagem pesada");
+  }
+  if (face.usedFallback) {
+    failedTips.push("Enquadramento claro do rosto (selfie frontal)");
   }
 
   if (labs.length < 40) {
@@ -165,23 +223,72 @@ export async function analyzeImageBuffer(
 
   const roiLabs = await sampleRoiLabs(buffer, width, height, face.rois);
   const labUndertone = undertoneLabFromRois(roiLabs, lab);
+  const labHair = medianLab(roiLabs.filter((r) => r.kind === "hair"));
+  const labEyes = medianLab(
+    roiLabs.filter((r) => r.kind === "leftEye" || r.kind === "rightEye"),
+  );
+
+  const forehead = roiLabs.find((r) => r.kind === "forehead");
+  const cheekL = labUndertone.L;
+  let roiConsistencyWarning = false;
+  if (forehead && Math.abs(forehead.lab.L - cheekL) > 14) {
+    roiConsistencyWarning = true;
+    warnings.push(
+      "Luminosidade desigual entre testa e bochechas — luz lateral ou sombra pode distorcer o subtom.",
+    );
+    failedTips.push("Iluminação uniforme no rosto (sem sombra dura de um lado)");
+  }
 
   const sortedL = [...Lvals].sort((a, b) => a - b);
   const p10 = sortedL[Math.floor(sortedL.length * 0.1)] ?? lab.L;
   const p90 = sortedL[Math.floor(sortedL.length * 0.9)] ?? lab.L;
-  const contrastScore = p90 - p10;
+  const skinContrast = p90 - p10;
+  const hairContrast = labHair ? Math.abs(lab.L - labHair.L) : 0;
+  const eyeContrast = labEyes ? Math.abs(lab.L - labEyes.L) : 0;
+
+  let contrastScore = skinContrast;
+  let contrastSource: ColorFeatures["contrastSource"] = "skin_l";
+  if (hairContrast > contrastScore) {
+    contrastScore = hairContrast;
+    contrastSource = "skin_hair";
+  }
+  if (eyeContrast > contrastScore * 0.9 && eyeContrast > 10) {
+    // olhos ajudam a confirmar contraste alto, sem substituir se cabelo já bastou
+    if (eyeContrast > contrastScore) {
+      contrastScore = eyeContrast;
+      contrastSource = "skin_eyes";
+    }
+  }
+
+  const skinPixelRatio = skinCount / Math.max(1, totalPixels);
+  const qualityBand = assessQualityBand({
+    lightingWarning,
+    faceLikeDetected,
+    usedFaceFallback: face.usedFallback,
+    roiConsistencyWarning,
+    resolutionLow,
+    skinPixelRatio,
+  });
+  if (qualityBand === "ruim") {
+    warnings.push(
+      "Qualidade da foto baixa para colorimetria confiável — refaça com luz natural e enquadramento frontal.",
+    );
+  }
 
   const features: ColorFeatures = {
-    featureSchemaVersion: 1,
+    featureSchemaVersion: 2,
     lab,
     labUndertone,
+    labHair,
+    labEyes,
     temperatureScore: Number(
       (labUndertone.b * 0.7 + labUndertone.a * 0.3).toFixed(2),
     ),
     valueScore: Number(lab.L.toFixed(2)),
     chromaScore: Number(chromaFromLab(labUndertone).toFixed(2)),
     contrastScore: Number(contrastScore.toFixed(2)),
-    skinPixelRatio: Number((skinCount / Math.max(1, totalPixels)).toFixed(4)),
+    contrastSource,
+    skinPixelRatio: Number(skinPixelRatio.toFixed(4)),
     sampleCount: labs.length,
     detectorProvider: face.provider,
     faceBox: face.primary,
@@ -196,6 +303,8 @@ export async function analyzeImageBuffer(
     faceLikeDetected,
     lightingWarning,
     usedFaceFallback: face.usedFallback,
+    roiConsistencyWarning,
+    qualityBand,
   });
 
   const photoQuality: PhotoQuality = {
@@ -206,7 +315,10 @@ export async function analyzeImageBuffer(
     detectorProvider: face.provider,
     usedFaceFallback: face.usedFallback,
     lightingWarning,
+    roiConsistencyWarning,
+    qualityBand,
     warnings: [...new Set(warnings)],
+    failedTips: [...new Set(failedTips)],
   };
 
   return {
@@ -226,13 +338,16 @@ export function classifyFromLab(
   extras?: Partial<ColorFeatures> & { width?: number; height?: number },
 ): ClassificationResult {
   const features: ColorFeatures = {
-    featureSchemaVersion: 1,
+    featureSchemaVersion: 2,
     lab,
     labUndertone: lab,
+    labHair: extras?.labHair ?? null,
+    labEyes: extras?.labEyes ?? null,
     temperatureScore: Number((lab.b * 0.7 + lab.a * 0.3).toFixed(2)),
     valueScore: Number(lab.L.toFixed(2)),
     chromaScore: Number(chromaFromLab(lab).toFixed(2)),
     contrastScore: extras?.contrastScore ?? 20,
+    contrastSource: extras?.contrastSource ?? "skin_l",
     skinPixelRatio: extras?.skinPixelRatio ?? 0.12,
     sampleCount: extras?.sampleCount ?? 1000,
     detectorProvider: extras?.detectorProvider ?? "test",
@@ -255,7 +370,10 @@ export function classifyFromLab(
     detectorProvider: features.detectorProvider,
     usedFaceFallback: false,
     lightingWarning: false,
+    roiConsistencyWarning: false,
+    qualityBand: "boa",
     warnings: [],
+    failedTips: [],
   };
   return {
     seasonId,

@@ -23,7 +23,7 @@ export default function RegisterPage() {
     };
 
     if (!payload.lgpdConsent) {
-      setError("É necessário aceitar o consentimento LGPD.");
+      setError("Aceite o termo de privacidade para criar a conta.");
       setLoading(false);
       return;
     }
@@ -35,7 +35,14 @@ export default function RegisterPage() {
     });
     const data = await res.json();
     if (!res.ok) {
-      setError(data.error || "Falha no cadastro");
+      setError(data.error || "Não foi possível criar a conta.");
+      setLoading(false);
+      return;
+    }
+    if (!data.user) {
+      setError(
+        "Não foi possível criar a conta com este e-mail. Tente entrar ou use outro e-mail.",
+      );
       setLoading(false);
       return;
     }
@@ -59,7 +66,7 @@ export default function RegisterPage() {
       <div className="card w-full max-w-md space-y-5">
         <div>
           <Link href="/" className="font-display text-2xl">
-            Colometria
+            Colorimetria
           </Link>
           <h1 className="mt-3 font-display text-3xl">Criar conta</h1>
         </div>
@@ -68,13 +75,26 @@ export default function RegisterPage() {
             <label className="label" htmlFor="name">
               Nome
             </label>
-            <input id="name" name="name" required className="input" />
+            <input
+              id="name"
+              name="name"
+              required
+              className="input"
+              autoComplete="name"
+            />
           </div>
           <div>
             <label className="label" htmlFor="email">
-              Email
+              E-mail
             </label>
-            <input id="email" name="email" type="email" required className="input" />
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              className="input"
+              autoComplete="email"
+            />
           </div>
           <div>
             <label className="label" htmlFor="password">
@@ -85,16 +105,20 @@ export default function RegisterPage() {
               name="password"
               type="password"
               required
-              minLength={6}
+              minLength={8}
               className="input"
+              autoComplete="new-password"
             />
+            <p className="mt-1 text-xs text-[var(--muted)]">
+              Mínimo de 8 caracteres.
+            </p>
           </div>
           <label className="flex items-start gap-2 text-sm text-[var(--muted)]">
             <input name="lgpdConsent" type="checkbox" className="mt-1" required />
             <span>
               Autorizo o tratamento dos meus dados pessoais e da imagem facial
               para colorimetria, conforme a LGPD. Posso solicitar exclusão
-              posteriormente. Dados ficam em PostgreSQL próprio do projeto.
+              posteriormente. Seus dados ficam em servidor próprio da Colorimetria.
             </span>
           </label>
           {error && <p className="text-sm text-red-700">{error}</p>}
@@ -102,6 +126,12 @@ export default function RegisterPage() {
             {loading ? "Criando…" : "Criar conta"}
           </button>
         </form>
+        <p className="text-sm text-[var(--muted)]">
+          Já tem conta?{" "}
+          <Link href="/login" className="underline">
+            Entrar
+          </Link>
+        </p>
       </div>
     </main>
   );

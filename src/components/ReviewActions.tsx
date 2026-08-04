@@ -58,7 +58,7 @@ export function ConsultantReviewForm({
     const data = await res.json();
     setLoading(false);
     if (!res.ok) {
-      setMsg(data.error || "Erro");
+      setMsg(data.error || "Não foi possível salvar a revisão.");
       return;
     }
     setMsg("Relatório aprovado.");

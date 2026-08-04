@@ -7,8 +7,14 @@ import { prisma } from "@/lib/db/prisma";
 const statusLabel: Record<string, string> = {
   PENDING: "Processando",
   READY: "Pronto",
-  NEEDS_REVIEW: "Aguarda consultora",
-  APPROVED: "Aprovado pela consultora",
+  NEEDS_REVIEW: "Em revisão",
+  APPROVED: "Validado pela consultora",
+};
+
+const contextLabel: Record<string, string> = {
+  casual: "Casual",
+  trabalho: "Trabalho",
+  noite: "Noite",
 };
 
 export default async function DashboardPage() {
@@ -62,10 +68,17 @@ export default async function DashboardPage() {
                       <p className="text-sm text-[var(--muted)]">
                         {new Date(a.createdAt).toLocaleString("pt-BR")} ·{" "}
                         {statusLabel[a.status] || a.status}
-                        {a.consultantApproved ? " · selo consultora" : ""}
+                        {a.consultantApproved
+                          ? " · Validado pela consultora"
+                          : ""}
+                        {a.status === "PENDING"
+                          ? " · em geral leva poucos minutos"
+                          : ""}
                       </p>
                     </div>
-                    <span className="badge">{a.context}</span>
+                    <span className="badge">
+                      {contextLabel[a.context] || a.context}
+                    </span>
                   </Link>
                 </li>
               );

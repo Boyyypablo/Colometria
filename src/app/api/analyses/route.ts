@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { saveUserImage } from "@/lib/storage/local";
 import { analyzeImageBuffer } from "@/lib/color/classifier";
+import { parseAnalysisGoals } from "@/lib/color/goals";
 import { buildRecommendations, getSeasonById } from "@/lib/color/recommendations";
 
 export const runtime = "nodejs";
@@ -10,7 +11,7 @@ export const runtime = "nodejs";
 export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Não autenticada." }, { status: 401 });
+    return NextResponse.json({ error: "Faça login para continuar." }, { status: 401 });
   }
 
   const user = await prisma.user.findUnique({
@@ -29,6 +30,7 @@ export async function POST(request: Request) {
   const context =
     contextRaw === "trabalho" || contextRaw === "noite" ? contextRaw : "casual";
   const consent = form.get("biometricConsent") === "true";
+  const goals = parseAnalysisGoals(form.getAll("goals"));
 
   if (!consent) {
     return NextResponse.json(
@@ -59,6 +61,7 @@ export async function POST(request: Request) {
       imagePath,
       status: "PENDING",
       context,
+      goals,
     },
   });
 
@@ -71,6 +74,10 @@ export async function POST(request: Request) {
 
     const recommendations = buildRecommendations(season, context, {
       temperatureScore: result.features.temperatureScore,
+      goals,
+      skinLab: result.features.labUndertone,
+      valueScore: result.features.valueScore,
+      contrastScore: result.features.contrastScore,
     });
     const status = result.needsReview ? "NEEDS_REVIEW" : "READY";
 
@@ -92,7 +99,6 @@ export async function POST(request: Request) {
       },
     });
 
-    // Amostra para dataset de treino (Fase 2) — não bloqueia a resposta se falhar
     try {
       await prisma.analysisSample.create({
         data: {
@@ -117,7 +123,7 @@ export async function POST(request: Request) {
     });
     return NextResponse.json(
       {
-        error: err instanceof Error ? err.message : "Falha na análise",
+        error: err instanceof Error ? err.message : "Não foi possível concluir a análise.",
         analysisId: pending.id,
       },
       { status: 500 },

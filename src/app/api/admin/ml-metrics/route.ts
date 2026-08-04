@@ -5,10 +5,10 @@ import { computeMlMetrics } from "@/lib/ml/metrics";
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Não autenticada." }, { status: 401 });
+    return NextResponse.json({ error: "Faça login para continuar." }, { status: 401 });
   }
   if (session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
   }
 
   const metrics = await computeMlMetrics();

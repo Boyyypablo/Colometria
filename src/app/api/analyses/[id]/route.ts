@@ -8,7 +8,7 @@ type Params = { params: Promise<{ id: string }> };
 export async function GET(_request: Request, { params }: Params) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Não autenticada." }, { status: 401 });
+    return NextResponse.json({ error: "Faça login para continuar." }, { status: 401 });
   }
 
   const { id } = await params;
@@ -33,7 +33,7 @@ export async function GET(_request: Request, { params }: Params) {
   const isStaff =
     session.user.role === "CONSULTANT" || session.user.role === "ADMIN";
   if (!isOwner && !isStaff) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
   }
 
   return NextResponse.json({ analysis });
@@ -42,7 +42,7 @@ export async function GET(_request: Request, { params }: Params) {
 export async function PATCH(request: Request, { params }: Params) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Não autenticada." }, { status: 401 });
+    return NextResponse.json({ error: "Faça login para continuar." }, { status: 401 });
   }
 
   const { id } = await params;
@@ -52,7 +52,7 @@ export async function PATCH(request: Request, { params }: Params) {
   if (body.action === "request_review") {
     const analysis = await prisma.analysis.findUnique({ where: { id } });
     if (!analysis || analysis.userId !== session.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
     }
     const updated = await prisma.analysis.update({
       where: { id },
@@ -73,6 +73,14 @@ export async function HEAD(_request: Request, { params }: Params) {
   const { id } = await params;
   const analysis = await prisma.analysis.findUnique({ where: { id } });
   if (!analysis) return new NextResponse(null, { status: 404 });
+
+  const isOwner = analysis.userId === session.user.id;
+  const isStaff =
+    session.user.role === "CONSULTANT" || session.user.role === "ADMIN";
+  if (!isOwner && !isStaff) {
+    return new NextResponse(null, { status: 403 });
+  }
+
   try {
     await readUpload(analysis.imagePath);
     return new NextResponse(null, { status: 200 });

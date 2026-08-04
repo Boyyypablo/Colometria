@@ -58,8 +58,40 @@ describe("classifyFromLab", () => {
     expect(result.seasonId).toBe("deep_autumn");
   });
 
-  it("chromaFromLab é consistente", () => {
-    const lab = { L: 50, a: 3, b: 4 };
-    expect(chromaFromLab(lab)).toBeCloseTo(5, 5);
+  it("contraste alto em frio médio/brilhante puxa inverno", () => {
+    const result = classifyFromLab(
+      { L: 55, a: 6, b: -10 },
+      { sampleCount: 1200, skinPixelRatio: 0.15, contrastScore: 36 },
+    );
+    expect(result.seasonId).toMatch(/winter|summer/);
+  });
+
+  it("contraste alto + cabelo escuro → Inverno Brilhante (não Primavera Clara)", () => {
+    // Caso real: pele clara, subtom pele “quente” por luz, cabelo escuro, contraste ~47
+    const result = classifyFromLab(
+      { L: 68, a: 14, b: 18 },
+      {
+        sampleCount: 1200,
+        skinPixelRatio: 0.15,
+        contrastScore: 47,
+        labHair: { L: 22, a: 4, b: 2 },
+        detectorProvider: "heuristic",
+      },
+    );
+    expect(result.seasonId).toBe("bright_winter");
+    expect(result.undertoneLabel).toMatch(/frio/);
+    expect(result.confidence).toBeLessThanOrEqual(0.85);
+  });
+
+  it("contraste alto sem cabelo não cai em primavera clara", () => {
+    const result = classifyFromLab(
+      { L: 72, a: 10, b: 16 },
+      {
+        sampleCount: 1000,
+        skinPixelRatio: 0.12,
+        contrastScore: 40,
+      },
+    );
+    expect(result.seasonId).not.toBe("light_spring");
   });
 });

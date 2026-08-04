@@ -2,23 +2,32 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 const schema = z.object({
   email: z.string().email(),
-  password: z.string().min(6),
+  password: z.string().min(8).max(128),
   name: z.string().min(2).max(80),
   lgpdConsent: z.literal(true),
 });
 
 export async function POST(request: Request) {
   try {
+    const rl = rateLimit(`register:${clientIp(request)}`, 5, 15 * 60 * 1000);
+    if (!rl.ok) {
+      return NextResponse.json(
+        { error: "Muitas tentativas. Aguarde alguns minutos." },
+        { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } },
+      );
+    }
+
     const body = await request.json();
     const parsed = schema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
         {
           error:
-            "Dados inválidos. Aceite o consentimento LGPD e use senha com 6+ caracteres.",
+            "Dados inválidos. Aceite o termo de privacidade e use senha com 8+ caracteres.",
         },
         { status: 400 },
       );
@@ -26,11 +35,19 @@ export async function POST(request: Request) {
 
     const email = parsed.data.email.toLowerCase();
     const exists = await prisma.user.findUnique({ where: { email } });
+    // Resposta uniforme para reduzir enumeração de e-mail
     if (exists) {
-      return NextResponse.json({ error: "Email já cadastrado." }, { status: 409 });
+      return NextResponse.json(
+        {
+          ok: true,
+          message:
+            "Se o e-mail estiver disponível, a conta será criada. Tente entrar ou use outro e-mail.",
+        },
+        { status: 200 },
+      );
     }
 
-    const passwordHash = await bcrypt.hash(parsed.data.password, 10);
+    const passwordHash = await bcrypt.hash(parsed.data.password, 12);
     const user = await prisma.user.create({
       data: {
         email,
@@ -44,6 +61,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ user }, { status: 201 });
   } catch {
-    return NextResponse.json({ error: "Erro ao registrar." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Não foi possível criar a conta." },
+      { status: 500 },
+    );
   }
 }

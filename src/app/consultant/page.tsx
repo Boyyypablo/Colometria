@@ -4,6 +4,13 @@ import { AppHeader } from "@/components/AppHeader";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 
+const statusLabel: Record<string, string> = {
+  PENDING: "Processando",
+  READY: "Pronto (sem revisão)",
+  NEEDS_REVIEW: "Em revisão",
+  APPROVED: "Validado pela consultora",
+};
+
 export default async function ConsultantPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
@@ -29,8 +36,8 @@ export default async function ConsultantPage() {
         <div>
           <h1 className="font-display text-3xl">Fila da consultora</h1>
           <p className="mt-1 text-[var(--muted)]">
-            Priorize análises com status &quot;Aguarda consultora&quot;. Você
-            pode ajustar a estação e aprovar o relatório.
+            Análises prontas ou aguardando revisão. Priorize as que estão em
+            revisão; você pode ajustar a estação e aprovar o relatório.
           </p>
         </div>
 
@@ -52,7 +59,7 @@ export default async function ConsultantPage() {
                         "Sem estação"}
                     </p>
                     <p className="text-sm text-[var(--muted)]">
-                      {item.status} · confiança{" "}
+                      {statusLabel[item.status] || item.status} · confiança{" "}
                       {item.confidence != null
                         ? `${Math.round(item.confidence * 100)}%`
                         : "—"}{" "}

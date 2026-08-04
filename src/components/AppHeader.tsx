@@ -8,8 +8,8 @@ export async function AppHeader() {
 
   return (
     <header className="shell flex items-center justify-between py-5">
-      <Link href={session ? "/dashboard" : "/"} className="font-display text-2xl tracking-tight">
-        Colometria
+      <Link href="/" className="font-display text-2xl tracking-tight">
+        Colorimetria
       </Link>
       <nav className="flex items-center gap-3 text-sm">
         {session ? (

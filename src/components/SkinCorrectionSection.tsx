@@ -4,7 +4,8 @@ const roleLabel: Record<string, string> = {
   corretor: "Corretivo",
   base: "Base",
   iluminador: "Iluminador",
-  evitar_local: "Evitar no teste",
+  evitar_local: "Evitar no teste de cores",
+  foco_olhar: "Foco no olhar",
 };
 
 export function SkinCorrectionSection({
@@ -15,9 +16,8 @@ export function SkinCorrectionSection({
   return (
     <section className="space-y-4" aria-labelledby="correction-heading">
       <div>
-        <p className="badge">Correção da pele</p>
-        <h2 id="correction-heading" className="mt-2 font-display text-2xl">
-          Disfarçar olheiras e manchas
+        <h2 id="correction-heading" className="font-display text-2xl">
+          Cuidados com a pele
         </h2>
         <p className="mt-2 max-w-3xl text-sm text-[var(--muted)]">
           {block.intro}

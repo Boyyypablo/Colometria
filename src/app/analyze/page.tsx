@@ -14,9 +14,9 @@ export default async function AnalyzePage() {
         <div>
           <h1 className="font-display text-3xl">Nova análise</h1>
           <p className="mt-2 text-[var(--muted)]">
-            Envie uma selfie frontal. O sistema extrai o subtom em CIELAB e
-            classifica em uma das 12 estações. Baixa confiança entra na fila da
-            consultora.
+            Envie uma selfie com boa luz e escolha o que quer otimizar. A análise
+            usa pele, cabelo e contraste para sugerir cores que fazem sentido
+            para você.
           </p>
         </div>
         <AnalyzeForm />

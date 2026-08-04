@@ -9,7 +9,7 @@ export const SEASON_PALETTES: SeasonDefinition[] = [
     value: "light",
     chroma: "bright",
     description:
-      "Subtom quente com alto contraste e cores vivas. Harmoniza com pigmentos claros, dourados e saturados.",
+      "Subtom quente com alto contraste e cores vivas (cartela irmã do Inverno Brilhante). Harmoniza com pigmentos claros, dourados e saturados.",
     useColors: ["#FF6B35", "#FFD23F", "#00C2A8", "#FF4D6D", "#7CFF6B", "#FFFFFF"],
     avoidColors: ["#4A5568", "#6B7280", "#1E3A5F", "#7C3AED"],
     clothing: [
@@ -36,7 +36,7 @@ export const SEASON_PALETTES: SeasonDefinition[] = [
     value: "medium",
     chroma: "bright",
     description:
-      "Caroteno evidente, claridade média e vivacidade. Cores alegres de base amarela.",
+      "Subtom quente bem marcado, claridade média e vivacidade. Cores alegres de base amarela.",
     useColors: ["#F4A261", "#E9C46A", "#2A9D8F", "#E76F51", "#F1FAEE"],
     avoidColors: ["#5B21B6", "#1F2937", "#9CA3AF", "#DB2777"],
     clothing: [
@@ -50,7 +50,7 @@ export const SEASON_PALETTES: SeasonDefinition[] = [
     ],
     eyeshadow: [
       { hex: "#BC6C25", label: "Cobre" },
-      { hex: "#457B9D", label: "Azul-quente" },
+      { hex: "#457B9D", label: "Azul quente" },
     ],
     base: [{ hex: "#E8C4A0", label: "Base mel" }],
   },
@@ -75,10 +75,10 @@ export const SEASON_PALETTES: SeasonDefinition[] = [
       { hex: "#E07A5F", label: "Coral suave" },
     ],
     eyeshadow: [
-      { hex: "#E9C46A", label: "Champagne" },
+      { hex: "#E9C46A", label: "Champanhe" },
       { hex: "#90BE6D", label: "Verde claro" },
     ],
-    base: [{ hex: "#F8E1C7", label: "Base ivory quente" }],
+    base: [{ hex: "#F8E1C7", label: "Base marfim quente" }],
   },
   {
     id: "light_summer",
@@ -98,10 +98,10 @@ export const SEASON_PALETTES: SeasonDefinition[] = [
     ],
     lipstick: [
       { hex: "#D4739C", label: "Rosa frio" },
-      { hex: "#C9184A", label: "Berry suave" },
+      { hex: "#C9184A", label: "Rosa-ameixa suave" },
     ],
     eyeshadow: [
-      { hex: "#9B8EA8", label: "Mauve" },
+      { hex: "#9B8EA8", label: "Malva" },
       { hex: "#7EB8DA", label: "Azul suave" },
     ],
     base: [{ hex: "#F5D6D0", label: "Base rosada clara" }],
@@ -123,7 +123,7 @@ export const SEASON_PALETTES: SeasonDefinition[] = [
       { hex: "#1D3557", label: "Azul-marinho", context: ["trabalho"] },
     ],
     lipstick: [
-      { hex: "#C9184A", label: "Rosa berry" },
+      { hex: "#C9184A", label: "Rosa-ameixa" },
       { hex: "#9D0208", label: "Vermelho frio" },
     ],
     eyeshadow: [
@@ -140,16 +140,16 @@ export const SEASON_PALETTES: SeasonDefinition[] = [
     value: "medium",
     chroma: "muted",
     description:
-      "Frio e muted. Tons acinzentados, opacos e sofisticados.",
+      "Frio e suave. Tons acinzentados, opacos e sofisticados.",
     useColors: ["#8D99AE", "#B8C0CC", "#ADB5BD", "#6C757D", "#E9ECEF"],
     avoidColors: ["#FF0000", "#00FF00", "#FFD700", "#FF1493"],
     clothing: [
       { hex: "#8D99AE", label: "Cinza-azulado", context: ["trabalho"] },
       { hex: "#ADB5BD", label: "Cinza pérola", context: ["casual", "trabalho"] },
-      { hex: "#A98467", label: "Taupe frio", context: ["casual"] },
+      { hex: "#A98467", label: "Cinza-amarronzado frio", context: ["casual"] },
     ],
     lipstick: [
-      { hex: "#9A8C98", label: "Nude mauve" },
+      { hex: "#9A8C98", label: "Nude malva" },
       { hex: "#6D597A", label: "Ameixa suave" },
     ],
     eyeshadow: [
@@ -192,7 +192,7 @@ export const SEASON_PALETTES: SeasonDefinition[] = [
     value: "medium",
     chroma: "bright",
     description:
-      "Caroteno forte, profundidade média e riqueza terrosa.",
+      "Subtom quente intenso, profundidade média e riqueza terrosa.",
     useColors: ["#BC6C25", "#DDA15E", "#606C38", "#283618", "#FEFAE0"],
     avoidColors: ["#EC4899", "#3B82F6", "#A78BFA", "#F0F9FF"],
     clothing: [
@@ -244,24 +244,54 @@ export const SEASON_PALETTES: SeasonDefinition[] = [
     value: "deep",
     chroma: "bright",
     description:
-      "Frio, alto contraste e cores puras e dramáticas.",
-    useColors: ["#000000", "#FFFFFF", "#E63946", "#023E8A", "#7B2CBF"],
-    avoidColors: ["#D4A373", "#A98467", "#FEFAE0", "#BC6C25"],
+      "Beleza fria, escura e brilhante (também chamada Inverno Vivo / Clear Winter). Harmoniza com cores escuras, frias e com reflexo — branco óptico, preto brilhoso, vermelhos e azuis puros.",
+    useColors: [
+      "#000000",
+      "#FFFFFF",
+      "#E63946",
+      "#023E8A",
+      "#7B2CBF",
+      "#0A7A6E",
+      "#6B0F2B",
+      "#1B3A6B",
+    ],
+    avoidColors: [
+      "#D4A373",
+      "#A98467",
+      "#FEFAE0",
+      "#BC6C25",
+      "#CB997E",
+      "#DDB892",
+      "#FAEDCD",
+      "#6B705C",
+    ],
     clothing: [
-      { hex: "#000000", label: "Preto", context: ["trabalho", "noite"] },
-      { hex: "#FFFFFF", label: "Branco optic", context: ["trabalho"] },
-      { hex: "#E63946", label: "Vermelho puro", context: ["noite"] },
+      { hex: "#000000", label: "Preto brilhoso", context: ["trabalho", "noite"] },
+      { hex: "#FFFFFF", label: "Branco óptico", context: ["trabalho", "casual"] },
+      { hex: "#E63946", label: "Vermelho puro", context: ["noite", "casual"] },
       { hex: "#023E8A", label: "Azul royal", context: ["trabalho"] },
+      { hex: "#1B3A6B", label: "Azul-marinho (jeans/paleta)", context: ["casual", "trabalho"] },
+      { hex: "#0A7A6E", label: "Cerceta", context: ["casual", "noite"] },
+      { hex: "#6B0F2B", label: "Marsala", context: ["noite"] },
+      { hex: "#7B2CBF", label: "Violeta vivo", context: ["noite"] },
     ],
     lipstick: [
-      { hex: "#C1121F", label: "Vermelho clássico" },
-      { hex: "#9B2226", label: "Berry intenso" },
+      { hex: "#C1121F", label: "Vermelho clássico vivo" },
+      { hex: "#9B2226", label: "Ameixa intensa" },
+      { hex: "#6B0F2B", label: "Marsala" },
+      { hex: "#E63946", label: "Vermelho brilhante + gloss" },
     ],
     eyeshadow: [
       { hex: "#240046", label: "Roxo profundo" },
       { hex: "#001D3D", label: "Azul noite" },
+      { hex: "#4A3728", label: "Marrom neutro frio" },
+      { hex: "#0A7A6E", label: "Cerceta" },
     ],
-    base: [{ hex: "#E8B4B8", label: "Base rosa fria" }],
+    base: [
+      { hex: "#E8B4B8", label: "Base rosa fria" },
+      { hex: "#D4C4B0", label: "Base neutra oliva" },
+      { hex: "#C9A9A6", label: "Base neutra rosada" },
+    ],
   },
   {
     id: "true_winter",
@@ -271,7 +301,7 @@ export const SEASON_PALETTES: SeasonDefinition[] = [
     value: "deep",
     chroma: "bright",
     description:
-      "Hemoglobina alta, contraste elevado e paleta fria intensa.",
+      "Contraste elevado e paleta fria intensa.",
     useColors: ["#0D1B2A", "#F8F9FA", "#D00000", "#3A0CA3", "#4CC9F0"],
     avoidColors: ["#E9C46A", "#F4A261", "#606C38", "#FEFAE0"],
     clothing: [
@@ -297,13 +327,13 @@ export const SEASON_PALETTES: SeasonDefinition[] = [
     value: "deep",
     chroma: "muted",
     description:
-      "Frio e profundo. Joias escuras, berry e azuis densos.",
+      "Frio e profundo. Joias escuras, ameixas e azuis densos.",
     useColors: ["#1A1A2E", "#16213E", "#0F3460", "#533483", "#E94560"],
     avoidColors: ["#FFE5B4", "#F4A261", "#FEFAE0", "#DDB892"],
     clothing: [
       { hex: "#1A1A2E", label: "Preto profundo", context: ["trabalho", "noite"] },
       { hex: "#0F3460", label: "Azul noite", context: ["trabalho"] },
-      { hex: "#E94560", label: "Berry", context: ["noite"] },
+      { hex: "#E94560", label: "Ameixa", context: ["noite"] },
     ],
     lipstick: [
       { hex: "#6A040F", label: "Vinho" },

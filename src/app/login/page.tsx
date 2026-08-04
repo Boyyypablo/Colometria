@@ -22,7 +22,7 @@ export default function LoginPage() {
     });
     setLoading(false);
     if (res?.error) {
-      setError("Email ou senha inválidos.");
+      setError("E-mail ou senha inválidos.");
       return;
     }
     router.push("/dashboard");
@@ -34,14 +34,14 @@ export default function LoginPage() {
       <div className="card w-full max-w-md space-y-5">
         <div>
           <Link href="/" className="font-display text-2xl">
-            Colometria
+            Colorimetria
           </Link>
           <h1 className="mt-3 font-display text-3xl">Entrar</h1>
         </div>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <label className="label" htmlFor="email">
-              Email
+              E-mail
             </label>
             <input
               id="email"
@@ -50,6 +50,7 @@ export default function LoginPage() {
               required
               className="input"
               placeholder="voce@email.com"
+              autoComplete="email"
             />
           </div>
           <div>
@@ -61,8 +62,9 @@ export default function LoginPage() {
               name="password"
               type="password"
               required
-              minLength={6}
+              minLength={8}
               className="input"
+              autoComplete="current-password"
             />
           </div>
           {error && <p className="text-sm text-red-700">{error}</p>}

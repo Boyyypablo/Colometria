@@ -8,7 +8,7 @@ Produto web de **colorimetria pessoal** (imagens primeiro): análise sazonal CIE
 - **PostgreSQL próprio** (Docker Compose, porta **5433**) + Prisma — **sem Supabase**
 - Auth.js (email/senha)
 - Storage local privado em `uploads/` (servido só via API autenticada)
-- VTO: mock local ou fal.ai (`VTO_PROVIDER=fal` + `FAL_KEY`)
+- VTO: Hugging Face Inference Providers (`HF_TOKEN`) — também Gemini / fal / mock
 
 ## Subir o ambiente
 

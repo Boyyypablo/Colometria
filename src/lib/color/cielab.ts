@@ -60,3 +60,20 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number } {
     b: num & 255,
   };
 }
+
+export function hexToLab(hex: string): LabColor {
+  const { r, g, b } = hexToRgb(hex);
+  return rgbToLab(r, g, b);
+}
+
+/** Distância CIE76 — suficiente para ranking relativo de paleta. */
+export function deltaE76(a: LabColor, b: LabColor): number {
+  return Math.sqrt(
+    (a.L - b.L) ** 2 + (a.a - b.a) ** 2 + (a.b - b.b) ** 2,
+  );
+}
+
+/** Score de temperatura Lab (quente > 0). */
+export function temperatureFromLab(lab: LabColor): number {
+  return lab.b * 0.7 + lab.a * 0.3;
+}

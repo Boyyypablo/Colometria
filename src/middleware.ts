@@ -5,7 +5,13 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth;
 
-  const protectedPaths = ["/dashboard", "/analyze", "/analyses", "/consultant"];
+  const protectedPaths = [
+    "/dashboard",
+    "/analyze",
+    "/analyses",
+    "/consultant",
+    "/admin",
+  ];
   const needsAuth = protectedPaths.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),
   );
@@ -24,7 +30,22 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
   }
 
-  return NextResponse.next();
+  if (
+    pathname.startsWith("/admin") &&
+    req.auth?.user?.role !== "ADMIN"
+  ) {
+    return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
+  }
+
+  const res = NextResponse.next();
+  res.headers.set("X-Content-Type-Options", "nosniff");
+  res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.headers.set("X-Frame-Options", "DENY");
+  res.headers.set(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=()",
+  );
+  return res;
 });
 
 export const config = {
@@ -33,5 +54,6 @@ export const config = {
     "/analyze/:path*",
     "/analyses/:path*",
     "/consultant/:path*",
+    "/admin/:path*",
   ],
 };

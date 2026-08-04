@@ -2,14 +2,38 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  ANALYSIS_GOAL_OPTIONS,
+  DEFAULT_ANALYSIS_GOALS,
+  type AnalysisGoalId,
+} from "@/lib/color/goals";
+import { PHOTO_QUALITY_TIPS } from "@/lib/color/photo-tips";
 
 export function AnalyzeForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [goals, setGoals] = useState<AnalysisGoalId[]>([
+    ...DEFAULT_ANALYSIS_GOALS,
+  ]);
+  const [tipsOk, setTipsOk] = useState(false);
+
+  function toggleGoal(id: AnalysisGoalId) {
+    setGoals((prev) =>
+      prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id],
+    );
+  }
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (goals.length === 0) {
+      setError("Selecione pelo menos um objetivo para a análise.");
+      return;
+    }
+    if (!tipsOk) {
+      setError("Confirme o checklist de qualidade da foto antes de enviar.");
+      return;
+    }
     setLoading(true);
     setError(null);
     const form = e.currentTarget;
@@ -18,12 +42,16 @@ export function AnalyzeForm() {
       "biometricConsent",
       fd.get("biometricConsent") === "on" ? "true" : "false",
     );
+    fd.set("photoTipsConfirmed", "true");
+    for (const g of goals) {
+      fd.append("goals", g);
+    }
 
     const res = await fetch("/api/analyses", { method: "POST", body: fd });
     const data = await res.json();
     setLoading(false);
     if (!res.ok) {
-      setError(data.error || "Falha na análise");
+      setError(data.error || "Não foi possível concluir a análise.");
       return;
     }
     router.push(`/analyses/${data.analysis.id}`);
@@ -44,10 +72,72 @@ export function AnalyzeForm() {
           className="input"
         />
       </div>
+
+      <fieldset className="space-y-3 rounded-xl border border-[var(--line)] p-4">
+        <legend className="label px-1">Checklist da foto</legend>
+        <p className="text-sm text-[var(--muted)]">
+          Boa foto = cores que fazem sentido. Confira antes de analisar.
+        </p>
+        <ul className="space-y-2 text-sm">
+          {PHOTO_QUALITY_TIPS.map((tip) => (
+            <li key={tip.id} className="flex gap-2">
+              <span aria-hidden className="text-[var(--accent)]">
+                ·
+              </span>
+              <span>{tip.label}</span>
+            </li>
+          ))}
+        </ul>
+        <label className="flex items-start gap-2 pt-1 text-sm">
+          <input
+            type="checkbox"
+            className="mt-1"
+            checked={tipsOk}
+            onChange={(e) => setTipsOk(e.target.checked)}
+            required
+          />
+          <span>Confirmei que a foto segue essas condições.</span>
+        </label>
+      </fieldset>
+
+      <fieldset className="space-y-3">
+        <legend className="label">O que você quer otimizar?</legend>
+        <p className="text-sm text-[var(--muted)]">
+          Marque só o que importa agora. Olheiras, manchas e vermelhidão só
+          entram se você pedir — nada é imposto.
+        </p>
+        <ul className="space-y-2">
+          {ANALYSIS_GOAL_OPTIONS.map((opt) => {
+            const checked = goals.includes(opt.id);
+            return (
+              <li key={opt.id}>
+                <label className="flex cursor-pointer items-start gap-3 text-sm">
+                  <input
+                    type="checkbox"
+                    className="mt-1"
+                    checked={checked}
+                    onChange={() => toggleGoal(opt.id)}
+                  />
+                  <span>
+                    <span className="font-medium">{opt.label}</span>
+                    <span className="mt-0.5 block text-[var(--muted)]">
+                      {opt.hint}
+                    </span>
+                  </span>
+                </label>
+              </li>
+            );
+          })}
+        </ul>
+      </fieldset>
+
       <div>
         <label className="label" htmlFor="context">
           Contexto da recomendação
         </label>
+        <p className="mb-2 text-sm text-[var(--muted)]">
+          Isso filtra sugestões de roupa para o dia a dia, trabalho ou noite.
+        </p>
         <select id="context" name="context" className="input" defaultValue="casual">
           <option value="casual">Casual</option>
           <option value="trabalho">Trabalho</option>
@@ -57,14 +147,13 @@ export function AnalyzeForm() {
       <label className="flex items-start gap-2 text-sm text-[var(--muted)]">
         <input name="biometricConsent" type="checkbox" className="mt-1" required />
         <span>
-          Consentimento biométrico: autorizo o processamento da imagem do meu
-          rosto apenas para colorimetria e simulação neste serviço. Imagens
-          ficam em armazenamento privado do servidor (não público).
+          Autorizo o uso da foto do meu rosto só para colorimetria e simulação
+          neste serviço. As imagens ficam privadas (não são públicas).
         </span>
       </label>
       {error && <p className="text-sm text-red-700">{error}</p>}
       <button type="submit" className="btn btn-primary" disabled={loading}>
-        {loading ? "Analisando…" : "Analisar coloração"}
+        {loading ? "Analisando…" : "Analisar foto"}
       </button>
     </form>
   );

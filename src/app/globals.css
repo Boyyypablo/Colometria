@@ -18,6 +18,7 @@
   --color-foreground: var(--ink);
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
+  --font-brand: var(--font-brand);
 }
 
 body {
@@ -35,6 +36,17 @@ h2,
 h3,
 .font-display {
   font-family: var(--font-display), Georgia, serif;
+}
+
+/** Marca na home — serifa de alto contraste (Safira / Bodoni). */
+.font-brand {
+  font-family: var(--font-brand), "Bodoni Moda", Didot, "Times New Roman", serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  text-transform: lowercase;
 }
 
 a {
@@ -122,4 +134,278 @@ a {
   font-weight: 600;
   background: rgba(154, 52, 18, 0.1);
   color: var(--accent);
+}
+
+/* Landing — cromia fria + painéis modulares */
+.landing {
+  --bg: #f4f7fb;
+  --bg-2: #e8eef6;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --accent: #1d4e89;
+  --accent-soft: #2563a8;
+  --accent-rose: #c45b7a;
+  --accent-teal: #0a7a6e;
+  --card: rgba(255, 255, 255, 0.78);
+  --line: rgba(15, 23, 42, 0.1);
+  --panel-navy: #13263a;
+  --panel-ice: #dbe7f3;
+  --panel-rose: #f3d5df;
+  --panel-teal: #c8e6e1;
+
+  overflow-x: clip;
+  position: relative;
+  color: var(--ink);
+  background:
+    radial-gradient(1100px 560px at 8% -8%, rgba(29, 78, 137, 0.14), transparent 55%),
+    radial-gradient(900px 480px at 100% 0%, rgba(196, 91, 122, 0.12), transparent 50%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+}
+
+.landing .btn-primary {
+  color: #f8fafc;
+}
+
+.landing .btn-primary:hover {
+  background: var(--accent-soft);
+}
+
+.landing .input:focus {
+  box-shadow: 0 0 0 3px rgba(29, 78, 137, 0.18);
+}
+
+.landing .badge {
+  background: rgba(29, 78, 137, 0.12);
+  color: var(--accent);
+}
+
+.landing-panel {
+  border-radius: 2.5rem;
+  padding: clamp(1.5rem, 4vw, 2.75rem);
+}
+
+.landing-panel--navy {
+  background: var(--panel-navy);
+  color: #f8fafc;
+}
+
+.landing-panel--ice {
+  background: var(--panel-ice);
+}
+
+.landing-panel--rose {
+  background: var(--panel-rose);
+}
+
+.landing-panel--teal {
+  background: var(--panel-teal);
+}
+
+.landing-hero {
+  position: relative;
+  isolation: isolate;
+}
+
+.landing-hero--photo {
+  min-height: min(92vh, 860px);
+}
+
+.landing-hero__photo {
+  object-fit: cover;
+  object-position: 72% center;
+  z-index: 0;
+}
+
+.landing-hero__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(
+      100deg,
+      rgba(15, 23, 42, 0.82) 0%,
+      rgba(15, 23, 42, 0.55) 38%,
+      rgba(15, 23, 42, 0.18) 68%,
+      rgba(15, 23, 42, 0.08) 100%
+    ),
+    linear-gradient(to top, rgba(15, 23, 42, 0.4), transparent 42%);
+  pointer-events: none;
+}
+
+.landing-hero__brand {
+  text-shadow: 0 8px 40px rgba(0, 0, 0, 0.35);
+}
+
+.landing-header-float {
+  position: absolute;
+  top: 1rem;
+  left: 0;
+  right: 0;
+  z-index: 30;
+}
+
+.landing-nav-capsule {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  border-radius: 999px;
+  padding: 0.55rem 0.75rem 0.55rem 1.1rem;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.25);
+}
+
+.landing-nav-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (max-width: 900px) {
+  .landing-nav-capsule {
+    flex-wrap: wrap;
+  }
+}
+
+.landing-nav-capsule a:not(.btn-on-photo),
+.landing-nav-capsule button:not(.btn-on-photo) {
+  color: #ffffff;
+}
+
+.landing-nav-capsule a.btn-on-photo,
+.landing-nav-capsule .btn-on-photo {
+  color: #0f172a;
+}
+
+.landing-nav-capsule a.btn-on-photo:hover,
+.landing-nav-capsule .btn-on-photo:hover {
+  color: #0f172a;
+}
+
+.landing-nav-brand {
+  color: #ffffff;
+  font-size: 1.25rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.landing-nav-links {
+  flex: 1;
+  min-width: 0;
+  justify-content: center;
+}
+
+.landing-nav-link {
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  color: rgba(255, 255, 255, 0.92);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.landing-nav-link:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+.landing-step-num {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #1d4e89;
+}
+
+.btn-on-photo {
+  background: #fff;
+  color: #0f172a;
+  border-color: transparent;
+}
+
+.btn-on-photo:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.btn-ghost-on-photo {
+  background: transparent;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.btn-ghost-on-photo:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.landing-accent-word {
+  font-family: var(--font-brand), "Bodoni Moda", Didot, serif;
+  font-style: italic;
+  font-weight: 500;
+  text-transform: lowercase;
+  color: var(--accent-rose);
+  letter-spacing: -0.02em;
+}
+
+.landing-accent-word--on-dark {
+  color: #f9a8c4;
+}
+
+.landing-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 220px;
+  gap: 0.85rem;
+}
+
+.landing-gallery--minimal .landing-gallery__item:first-child {
+  grid-row: span 2;
+  min-height: 100%;
+}
+
+.landing-gallery__item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background: var(--panel-ice);
+}
+
+@media (max-width: 768px) {
+  .landing-gallery {
+    grid-template-columns: 1fr;
+    grid-auto-rows: 220px;
+  }
+
+  .landing-gallery--minimal .landing-gallery__item:first-child {
+    grid-row: span 1;
+  }
+}
+
+.landing-palette-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 1.1rem;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.landing-palette-card:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.landing-palette-card .swatch {
+  width: 1.65rem;
+  height: 1.65rem;
+  border-color: rgba(255, 255, 255, 0.2);
 }

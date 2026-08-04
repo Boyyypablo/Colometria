@@ -65,4 +65,9 @@ describe("formatConfidence", () => {
     expect(formatConfidence(0.65).band).toBe("moderada");
     expect(formatConfidence(0.8).band).toBe("alta");
   });
+
+  it("nunca mostra 100% na UI", () => {
+    expect(formatConfidence(1).percent).toBe(85);
+    expect(formatConfidence(0.99).percent).toBe(85);
+  });
 });

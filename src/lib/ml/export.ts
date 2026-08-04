@@ -11,7 +11,7 @@ export type MlExportSummary = {
   createdAt: string;
 };
 
-const ACTIVE_FEATURE_SCHEMA = 1;
+const ACTIVE_FEATURE_SCHEMA = 2;
 
 function stamp(d = new Date()): string {
   const y = d.getUTCFullYear();

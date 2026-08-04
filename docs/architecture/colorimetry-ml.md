@@ -48,9 +48,11 @@ Regras de resiliência:
 ### ROIs amostrados
 
 - `leftCheek`, `rightCheek` — **subtom** (prioridade em `labUndertone`)
-- `forehead` — valor / luminosidade
+- `forehead` — valor / luminosidade + consistência com bochecha
 - `jaw` — validação cruzada
-- Excluir boca/olhos do Lab de subtom
+- `hair` — contraste pele×cabelo (`labHair`)
+- `leftEye`, `rightEye` — contraste auxiliar (`labEyes`)
+- Excluir boca do Lab de subtom
 
 ## Dados
 
@@ -74,9 +76,21 @@ Labels gold:
 - **TTL:** `PHOTO_RETENTION_DAYS=365` (default) — `npm run retention:purge` remove análises/imagens/samples vencidos (`--dry-run`, `--days=N`).
 - Export de treino: sem email/nome; só `userId` hash opcional.
 
-## Personalização (decisão)
+## Calibração (caso Inverno Brilhante)
 
-Começa por **bias de estação** via `UserColorProfile` (temperature/value/chroma), não por re-rank de swatches. Re-rank de cores fica para iteração posterior.
+Erro observado: pele clara + contraste alto (cabelo/olhos escuros) + luz quente → **Primavera Clara** (e “evitar preto”), enquanto a cartela aprovada era **Inverno Brilhante**.
+
+Correção em `predictor/rules.ts` (`resolveSeasonAxes`):
+
+1. Valor efetivo usa gap pele×cabelo (pele clara + cabelo escuro ≠ estação “clara/suave”).
+2. Contraste alto não mapeia para `light_spring`.
+3. Cabelo escuro/frio + contraste alto corrige subtom “quente” induzido por luz → frio / `bright_winter`.
+4. UI de confiança nunca mostra 100% sem selo real (cap 85%).
+
+- `material/` (PDFs + vídeo) → conhecimento em `src/lib/color/season-knowledge.ts` + paleta `bright_winter` enriquecida.
+- Coaching na entrega: cartela irmã, contraste, estilo, make, cabelo, fora da paleta.
+- Objetivo de upload **`cabelo`**: tips de mechas + fundamentos (quente/frio, complementares).
+- Extratos: `material/_extracted/` (não republicar conteúdo de terceiros).
 
 ## Manutenção contínua
 
@@ -86,7 +100,7 @@ Começa por **bias de estação** via `UserColorProfile` (temperature/value/chro
 
 ## Correção da pele
 
-Camada separada da harmonia sazonal (`buildSkinCorrection`): corretivos para olheiras/manchas/vermelhidão por subtom. Feedback com target `correction:…`.
+Camada opcional (`buildSkinCorrection`), ativada só pelos **objetivos do upload** (`Analysis.goals`: olheiras, manchas, vermelhidão, base). Feedback com target `correction:…`.
 
 ## Confiabilidade
 

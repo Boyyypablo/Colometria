@@ -34,6 +34,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# material de referência (PDFs/vídeos grandes — fora do deploy)
+/material
+
 # uploads privados (imagens faciais)
 /uploads
 

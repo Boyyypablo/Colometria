@@ -7,7 +7,14 @@ export type FaceBox = {
   score: number;
 };
 
-export type FaceRoiKind = "leftCheek" | "rightCheek" | "forehead" | "jaw";
+export type FaceRoiKind =
+  | "leftCheek"
+  | "rightCheek"
+  | "forehead"
+  | "jaw"
+  | "hair"
+  | "leftEye"
+  | "rightEye";
 
 export type FaceRoi = {
   kind: FaceRoiKind;

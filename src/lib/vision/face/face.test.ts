@@ -5,11 +5,19 @@ import { createFaceDetector } from "@/lib/vision/face";
 import sharp from "sharp";
 
 describe("roisFromFaceBox", () => {
-  it("gera 4 ROIs dentro do bbox", () => {
+  it("gera 7 ROIs (cabelo, testa, olhos, bochechas, mandíbula)", () => {
     const box = { x: 0.2, y: 0.1, width: 0.5, height: 0.6, score: 0.9 };
     const rois = roisFromFaceBox(box);
     expect(rois.map((r) => r.kind).sort()).toEqual(
-      ["forehead", "jaw", "leftCheek", "rightCheek"].sort(),
+      [
+        "forehead",
+        "hair",
+        "jaw",
+        "leftCheek",
+        "leftEye",
+        "rightCheek",
+        "rightEye",
+      ].sort(),
     );
     for (const r of rois) {
       expect(r.x).toBeGreaterThanOrEqual(0);
@@ -61,7 +69,7 @@ describe("HeuristicFaceDetector", () => {
     const result = await det.detect(buffer, w, h);
     expect(result.provider).toBe("heuristic");
     expect(result.primary).not.toBeNull();
-    expect(result.rois.length).toBe(4);
+    expect(result.rois.length).toBe(7);
     const cx = result.primary!.x + result.primary!.width / 2;
     expect(cx).toBeGreaterThan(0.25);
     expect(cx).toBeLessThan(0.75);

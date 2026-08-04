@@ -171,7 +171,7 @@ export function FeedbackPanel({
 
       {corrections.length > 0 ? (
         <div className="space-y-1">
-          <h3 className="text-sm font-semibold">Correção da pele</h3>
+          <h3 className="text-sm font-semibold">Cuidados com a pele</h3>
           <ul>
             {corrections.map((item) => (
               <VoteButtons
@@ -189,7 +189,9 @@ export function FeedbackPanel({
       ) : null}
 
       <label className="block space-y-1 text-sm">
-        <span className="text-[var(--muted)]">Nota opcional (vai no próximo voto)</span>
+        <span className="text-[var(--muted)]">
+          Comentário opcional (enviado com o próximo voto)
+        </span>
         <input
           className="input"
           value={note}
@@ -197,6 +199,9 @@ export function FeedbackPanel({
           maxLength={1000}
           placeholder="Ex.: o coral ficou ótimo no dia a dia"
         />
+        <span className="text-xs text-[var(--muted)]">
+          Será enviado junto com o próximo “Ajudou” ou “Não ajudou”.
+        </span>
       </label>
 
       {error ? <p className="text-sm text-[var(--warn)]">{error}</p> : null}

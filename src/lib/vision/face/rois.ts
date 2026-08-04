@@ -5,11 +5,32 @@ export function roisFromFaceBox(box: FaceBox): FaceRoi[] {
   const { x, y, width: w, height: h } = box;
   return [
     {
+      kind: "hair",
+      x: x + w * 0.15,
+      y: Math.max(0, y - h * 0.22),
+      width: w * 0.7,
+      height: h * 0.22,
+    },
+    {
       kind: "forehead",
       x: x + w * 0.25,
       y: y + h * 0.08,
       width: w * 0.5,
       height: h * 0.18,
+    },
+    {
+      kind: "leftEye",
+      x: x + w * 0.14,
+      y: y + h * 0.28,
+      width: w * 0.22,
+      height: h * 0.1,
+    },
+    {
+      kind: "rightEye",
+      x: x + w * 0.64,
+      y: y + h * 0.28,
+      width: w * 0.22,
+      height: h * 0.1,
     },
     {
       kind: "leftCheek",
@@ -43,13 +64,13 @@ export function roisFromFaceBox(box: FaceBox): FaceRoi[] {
 
 /** União das ROIs (ou o próprio bbox) para crop de análise. */
 export function analysisCropFromFace(box: FaceBox): FaceBox {
-  // Margem leve para incluir testa/mandíbula sem fundo excessivo
+  // Margem leve para incluir testa/cabelo/mandíbula sem fundo excessivo
   const padX = box.width * 0.08;
-  const padY = box.height * 0.1;
+  const padY = box.height * 0.18;
   const x = clamp01(box.x - padX);
   const y = clamp01(box.y - padY);
   const right = Math.min(1, box.x + box.width + padX);
-  const bottom = Math.min(1, box.y + box.height + padY);
+  const bottom = Math.min(1, box.y + box.height + padY * 0.4);
   return {
     x,
     y,

@@ -23,12 +23,13 @@ declare module "@auth/core/jwt" {
   interface JWT {
     id: string;
     role: Role;
+    roleCheckedAt?: number;
   }
 }
 
 const credentialsSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(6),
+  password: z.string().min(8),
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -41,7 +42,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Credentials({
       name: "credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
+        email: { label: "E-mail", type: "email" },
         password: { label: "Senha", type: "password" },
       },
       async authorize(raw) {
@@ -70,6 +71,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id!;
         token.role = user.role;
+        token.roleCheckedAt = Date.now();
+        return token;
+      }
+      // Revalida role periodicamente (demote/ban)
+      const checkedAt =
+        typeof token.roleCheckedAt === "number" ? token.roleCheckedAt : 0;
+      if (token.id && Date.now() - checkedAt > 15 * 60 * 1000) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: String(token.id) },
+          select: { role: true },
+        });
+        if (!dbUser) {
+          // usuário removido — invalida sessão
+          token.id = "";
+          return token;
+        }
+        token.role = dbUser.role;
+        token.roleCheckedAt = Date.now();
       }
       return token;
     },

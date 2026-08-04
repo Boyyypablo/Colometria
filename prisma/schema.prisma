@@ -126,6 +126,8 @@ model Analysis {
   undertoneLabel     String?
   recommendations    Json?
   context            String         @default("casual")
+  /// Objetivos escolhidos no upload (harmonia, roupas, olheiras, …).
+  goals              String[]       @default([])
   consultantApproved Boolean        @default(false)
   /// Provider de face usado nesta análise (heuristic|blazeface|...).
   detectorProvider   String?
