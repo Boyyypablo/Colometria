@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "motion/react";
 import { SEASON_PALETTES } from "../../data/palettes/seasons";
+import { LandingReveal } from "@/components/LandingReveal";
 
 type Props = {
   loggedIn: boolean;
@@ -34,12 +34,9 @@ export function LandingPalettes({ loggedIn }: Props) {
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {SEASON_PALETTES.map((season, i) => (
-            <motion.div
+            <LandingReveal
               key={season.id}
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.4, delay: Math.min(i * 0.04, 0.32) }}
+              delay={Math.min(i * 0.04, 0.32)}
             >
               <Link href={href} className="landing-palette-card h-full">
                 <div className="flex items-start justify-between gap-2">
@@ -61,7 +58,7 @@ export function LandingPalettes({ loggedIn }: Props) {
                   ))}
                 </div>
               </Link>
-            </motion.div>
+            </LandingReveal>
           ))}
         </div>
       </div>

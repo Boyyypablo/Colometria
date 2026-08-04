@@ -1,4 +1,4 @@
-import type { ClassificationResult, ColorFeatures } from "./types";
+import type { ClassificationResult, ColorFeatures } from "../types";
 
 /**
  * Preditor de estação — trocável via COLOR_PREDICTOR.

@@ -1,6 +1,5 @@
-import { access } from "node:fs/promises";
 import { prisma } from "@/lib/db/prisma";
-import { deleteUpload, resolveUploadPath } from "@/lib/storage/local";
+import { deleteUpload, uploadExists } from "@/lib/storage/local";
 import {
   getRetentionCutoffDate,
   getRetentionCutoffDays,
@@ -19,12 +18,7 @@ function collectPaths(row: AnalysisPurgeRow): string[] {
 }
 
 async function fileExists(relative: string): Promise<boolean> {
-  try {
-    await access(resolveUploadPath(relative));
-    return true;
-  } catch {
-    return false;
-  }
+  return uploadExists(relative);
 }
 
 export async function findExpiredAnalyses(

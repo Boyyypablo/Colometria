@@ -43,7 +43,7 @@ export const huggingfaceVtoProvider: VtoProvider = {
         },
       });
 
-      let out = Buffer.from(await outBlob.arrayBuffer());
+      let out: Buffer = Buffer.from(await outBlob.arrayBuffer());
 
       const dist = await torsoColorDistance(
         out,
@@ -57,17 +57,21 @@ export const huggingfaceVtoProvider: VtoProvider = {
           `[vto/huggingface] cena=${scene} cor pouco alterada (dist=${dist.toFixed(1)}). Aplicando fallback.`,
         );
         if (scene === "face_closeup" && input.type === "BLOUSE_TONE") {
-          out = await composeFaceOntoColoredBody(
-            buffer,
-            input.hex,
-            input.faceBox,
+          out = Buffer.from(
+            await composeFaceOntoColoredBody(
+              buffer,
+              input.hex,
+              input.faceBox,
+            ),
           );
         } else {
-          out = await applyVisibleColorOverlay(
-            out,
-            input.hex,
-            input.type,
-            input.faceBox,
+          out = Buffer.from(
+            await applyVisibleColorOverlay(
+              out,
+              input.hex,
+              input.type,
+              input.faceBox,
+            ),
           );
         }
       }

@@ -236,6 +236,39 @@ a {
   text-shadow: 0 8px 40px rgba(0, 0, 0, 0.35);
 }
 
+/* Hero: CSS animation — se JS falhar, opacity base permanece 1 */
+.landing-hero-anim {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-hero-anim {
+    animation: landingHeroIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .landing-hero-anim--0 {
+    animation-delay: 0s;
+  }
+  .landing-hero-anim--1 {
+    animation-delay: 0.08s;
+  }
+  .landing-hero-anim--2 {
+    animation-delay: 0.16s;
+  }
+  .landing-hero-anim--3 {
+    animation-delay: 0.24s;
+  }
+}
+
+@keyframes landingHeroIn {
+  from {
+    transform: translateY(16px);
+  }
+  to {
+    transform: none;
+  }
+}
+
 .landing-header-float {
   position: absolute;
   top: 1rem;

@@ -41,6 +41,41 @@ Abra http://localhost:3000
 
 Copie `.env.example` → `.env`. Principal: `DATABASE_URL` (padrão `localhost:5433`).
 
+## Testes externos via túnel (sem VPS)
+
+Com o app local + Postgres Docker, exponha só a porta 3000:
+
+```bash
+npm run db:up
+npm run dev
+# em outro terminal:
+npm run tunnel
+```
+
+Copie a URL `https://….trycloudflare.com` e envie aos testadores.  
+Opcional: coloque essa URL em `AUTH_URL` no `.env` e reinicie o `npm run dev`.
+
+Requisito: [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/) (`winget install Cloudflare.cloudflared`).
+
+## Deploy em VPS (Docker)
+
+Stack completa no servidor: app Next.js + Postgres **só na rede interna** (porta do banco não fica pública).
+
+```bash
+# Na VPS (Ubuntu/Debian com Docker + Compose)
+git clone https://github.com/Boyyypablo/Colometria.git
+cd Colometria
+cp .env.production.example .env.production
+# Edite AUTH_URL, AUTH_SECRET, POSTGRES_PASSWORD, HF_TOKEN
+
+chmod +x scripts/vps-up.sh
+./scripts/vps-up.sh
+```
+
+- App: `http://SEU_IP:3000` (ou domínio atrás de Caddy/Nginx + HTTPS)
+- Crie a conta pela UI de registro (ou rode o seed localmente apontando ao DB via `ssh -L`)
+- Firewall: liberar só `22` e `3000` (ou `80/443` se usar proxy)
+
 ## Testes
 
 ```bash

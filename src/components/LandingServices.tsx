@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "motion/react";
 import { LANDING_IMAGES, LANDING_IMAGE_QUALITY } from "@/lib/landing-images";
+import { LandingReveal } from "@/components/LandingReveal";
 
 const services = [
   "Análise de estação (12 cartelas)",
@@ -27,13 +27,7 @@ export function LandingServices() {
           <div className="absolute inset-0 bg-[rgba(15,23,42,0.45)]" aria-hidden />
         </div>
         <div className="relative z-10 p-6 md:p-10 lg:p-12">
-          <motion.div
-            className="grid max-w-4xl gap-6 rounded-[2rem] bg-white/95 p-6 shadow-xl backdrop-blur-sm md:grid-cols-[1.2fr_0.8fr] md:p-8"
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.5 }}
-          >
+          <LandingReveal className="grid max-w-4xl gap-6 rounded-[2rem] bg-white/95 p-6 shadow-xl backdrop-blur-sm md:grid-cols-[1.2fr_0.8fr] md:p-8">
             <div>
               <h2 className="font-display text-3xl text-[var(--ink)]">
                 Na prática
@@ -57,7 +51,7 @@ export function LandingServices() {
                 sizes="(max-width: 768px) 100vw, 30vw"
               />
             </div>
-          </motion.div>
+          </LandingReveal>
         </div>
       </div>
     </section>

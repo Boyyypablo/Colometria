@@ -39,13 +39,6 @@ export default function RegisterPage() {
       setLoading(false);
       return;
     }
-    if (!data.user) {
-      setError(
-        "Não foi possível criar a conta com este e-mail. Tente entrar ou use outro e-mail.",
-      );
-      setLoading(false);
-      return;
-    }
 
     const login = await signIn("credentials", {
       email: payload.email,
@@ -54,7 +47,9 @@ export default function RegisterPage() {
     });
     setLoading(false);
     if (login?.error) {
-      router.push("/login");
+      setError(
+        "Não foi possível criar a conta com este e-mail. Tente entrar ou use outro e-mail.",
+      );
       return;
     }
     router.push("/analyze");

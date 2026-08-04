@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "motion/react";
 import { LANDING_IMAGES, LANDING_IMAGE_QUALITY } from "@/lib/landing-images";
+import { LandingReveal } from "@/components/LandingReveal";
 
 type Props = {
   loggedIn: boolean;
@@ -27,13 +27,7 @@ export function LandingCta({ loggedIn }: Props) {
             aria-hidden
           />
         </div>
-        <motion.div
-          className="relative z-10 flex flex-col gap-6 p-8 md:flex-row md:items-end md:justify-between md:p-12 lg:p-16"
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.5 }}
-        >
+        <LandingReveal className="relative z-10 flex flex-col gap-6 p-8 md:flex-row md:items-end md:justify-between md:p-12 lg:p-16">
           <div>
             <h2 className="max-w-md font-display text-3xl text-white md:text-4xl">
               Pronto para a sua cartela?
@@ -45,7 +39,7 @@ export function LandingCta({ loggedIn }: Props) {
           <Link href={loggedIn ? "/analyze" : "/register"} className="btn btn-on-photo">
             {loggedIn ? "Nova análise" : "Criar conta"}
           </Link>
-        </motion.div>
+        </LandingReveal>
       </div>
     </section>
   );

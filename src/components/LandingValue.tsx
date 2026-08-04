@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
+import { LandingReveal } from "@/components/LandingReveal";
 
 const blocks = [
   {
@@ -28,39 +28,28 @@ const blocks = [
 export function LandingValue() {
   return (
     <section className="shell py-12 md:py-20">
-      <motion.h2
-        className="font-display text-3xl md:text-4xl"
-        initial={{ opacity: 0, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.45 }}
-      >
+      <LandingReveal as="h2" className="font-display text-3xl md:text-4xl">
         Feito para colorimetria pessoal
-      </motion.h2>
-      <motion.p
+      </LandingReveal>
+      <LandingReveal
+        as="p"
+        delay={0.05}
         className="mt-3 max-w-xl text-[var(--muted)]"
-        initial={{ opacity: 0, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.45, delay: 0.05 }}
       >
         Do upload à cartela: clareza no relatório, sem ruído técnico.
-      </motion.p>
+      </LandingReveal>
       <div className="mt-10 grid gap-4 sm:grid-cols-2">
         {blocks.map((block, i) => (
-          <motion.div
+          <LandingReveal
             key={block.title}
             className={`landing-panel ${block.tone}`}
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.4, delay: 0.06 * i }}
+            delay={0.06 * i}
           >
             <h3 className="font-display text-2xl">{block.title}</h3>
             <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
               {block.text}
             </p>
-          </motion.div>
+          </LandingReveal>
         ))}
       </div>
     </section>

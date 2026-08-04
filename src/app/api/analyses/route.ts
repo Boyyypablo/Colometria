@@ -5,6 +5,7 @@ import { saveUserImage } from "@/lib/storage/local";
 import { analyzeImageBuffer } from "@/lib/color/classifier";
 import { parseAnalysisGoals } from "@/lib/color/goals";
 import { buildRecommendations, getSeasonById } from "@/lib/color/recommendations";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -12,6 +13,14 @@ export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Faça login para continuar." }, { status: 401 });
+  }
+
+  const rl = rateLimit(`analyses:${session.user.id}:${clientIp(request)}`, 20, 60 * 60 * 1000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Limite de análises por hora atingido. Tente mais tarde." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } },
+    );
   }
 
   const user = await prisma.user.findUnique({

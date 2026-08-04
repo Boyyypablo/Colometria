@@ -3,7 +3,7 @@ import type { FaceBox, FaceRoi } from "./types";
 /** Deriva ROIs estáveis a partir do bbox do rosto (coords normalizadas 0–1). */
 export function roisFromFaceBox(box: FaceBox): FaceRoi[] {
   const { x, y, width: w, height: h } = box;
-  return [
+  const raw: FaceRoi[] = [
     {
       kind: "hair",
       x: x + w * 0.15,
@@ -53,7 +53,8 @@ export function roisFromFaceBox(box: FaceBox): FaceRoi[] {
       width: w * 0.44,
       height: h * 0.2,
     },
-  ].map((r) => ({
+  ];
+  return raw.map((r) => ({
     ...r,
     x: clamp01(r.x),
     y: clamp01(r.y),

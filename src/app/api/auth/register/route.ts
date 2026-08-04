@@ -35,31 +35,24 @@ export async function POST(request: Request) {
 
     const email = parsed.data.email.toLowerCase();
     const exists = await prisma.user.findUnique({ where: { email } });
-    // Resposta uniforme para reduzir enumeração de e-mail
-    if (exists) {
-      return NextResponse.json(
-        {
-          ok: true,
-          message:
-            "Se o e-mail estiver disponível, a conta será criada. Tente entrar ou use outro e-mail.",
+
+    // Sempre hasheia (custo constante) — reduz timing + enumeração de e-mail.
+    const passwordHash = await bcrypt.hash(parsed.data.password, 12);
+
+    if (!exists) {
+      await prisma.user.create({
+        data: {
+          email,
+          name: parsed.data.name,
+          passwordHash,
+          lgpdConsentAt: new Date(),
+          role: "USER",
         },
-        { status: 200 },
-      );
+      });
     }
 
-    const passwordHash = await bcrypt.hash(parsed.data.password, 12);
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name: parsed.data.name,
-        passwordHash,
-        lgpdConsentAt: new Date(),
-        role: "USER",
-      },
-      select: { id: true, email: true, name: true },
-    });
-
-    return NextResponse.json({ user }, { status: 201 });
+    // Resposta idêntica exista ou não (anti-enumeração).
+    return NextResponse.json({ ok: true }, { status: 200 });
   } catch {
     return NextResponse.json(
       { error: "Não foi possível criar a conta." },
