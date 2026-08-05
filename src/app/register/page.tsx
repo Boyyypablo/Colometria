@@ -4,11 +4,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { FormEvent, useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [lgpdConsent, setLgpdConsent] = useState(false);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -19,7 +22,7 @@ export default function RegisterPage() {
       name: String(fd.get("name")),
       email: String(fd.get("email")),
       password: String(fd.get("password")),
-      lgpdConsent: fd.get("lgpdConsent") === "on",
+      lgpdConsent,
     };
 
     if (!payload.lgpdConsent) {
@@ -67,9 +70,9 @@ export default function RegisterPage() {
         </div>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="label" htmlFor="name">
+            <Label htmlFor="name" className="label mb-2">
               Nome
-            </label>
+            </Label>
             <input
               id="name"
               name="name"
@@ -79,9 +82,9 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="label" htmlFor="email">
+            <Label htmlFor="email" className="label mb-2">
               E-mail
-            </label>
+            </Label>
             <input
               id="email"
               name="email"
@@ -92,9 +95,9 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="label" htmlFor="password">
+            <Label htmlFor="password" className="label mb-2">
               Senha
-            </label>
+            </Label>
             <input
               id="password"
               name="password"
@@ -108,14 +111,23 @@ export default function RegisterPage() {
               Mínimo de 8 caracteres.
             </p>
           </div>
-          <label className="flex items-start gap-2 text-sm text-[var(--muted)]">
-            <input name="lgpdConsent" type="checkbox" className="mt-1" required />
-            <span>
+          <div className="flex items-start gap-2">
+            <Checkbox
+              id="lgpdConsent"
+              checked={lgpdConsent}
+              onCheckedChange={(v) => setLgpdConsent(v === true)}
+              className="mt-0.5"
+              required
+            />
+            <Label
+              htmlFor="lgpdConsent"
+              className="text-sm font-normal leading-snug text-[var(--muted)]"
+            >
               Autorizo o tratamento dos meus dados pessoais e da imagem facial
               para colorimetria, conforme a LGPD. Posso solicitar exclusão
               posteriormente. Seus dados ficam em servidor próprio da Colorimetria.
-            </span>
-          </label>
+            </Label>
+          </div>
           {error && <p className="text-sm text-red-700">{error}</p>}
           <button type="submit" className="btn btn-primary w-full" disabled={loading}>
             {loading ? "Criando…" : "Criar conta"}
