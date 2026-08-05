@@ -92,7 +92,7 @@ export function SimulationPanel({
         {usingAi
           ? "Escolha uma cor e veja como fica em você. Se a foto for só o rosto, montamos um meio-corpo; se houver roupa, trocamos o tom."
           : aiUnavailable
-            ? "Simulação com IA indisponível no momento. Tente mais tarde ou use outra análise."
+            ? "Simulação visual indisponível no momento. Tente mais tarde ou use outra análise."
             : "Prévia local da cor na sua foto."}
       </p>
       <div className="flex flex-wrap gap-2">

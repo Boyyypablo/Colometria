@@ -17,7 +17,7 @@ function ensureFalConfigured() {
   const key = readFalKey();
   if (!key) {
     throw new Error(
-      "Simulação com IA exige FAL_KEY. Configure a chave em .env (fal.ai) ou use VTO_PROVIDER=mock.",
+      "Simulação visual exige FAL_KEY. Configure a chave em .env (fal.ai) ou use VTO_PROVIDER=mock.",
     );
   }
   fal.config({ credentials: key });
@@ -49,7 +49,7 @@ export const falVtoProvider: VtoProvider = {
   async run(input: VtoRunInput) {
     if (!isFalConfigured()) {
       throw new Error(
-        "Simulação com IA exige FAL_KEY válida (KEY_ID:KEY_SECRET).",
+        "Simulação visual exige FAL_KEY válida (KEY_ID:KEY_SECRET).",
       );
     }
 

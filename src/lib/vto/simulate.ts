@@ -65,7 +65,7 @@ export async function processSimulationJob(jobId: string): Promise<void> {
           status: "COMPLETED",
           outputPath: result.outputPath,
           provider: "mock",
-          errorMessage: `IA indisponível — mock usado. ${
+          errorMessage: `Simulação indisponível — mock usado. ${
             err instanceof Error ? err.message : String(err)
           }`,
         },

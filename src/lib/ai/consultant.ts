@@ -143,7 +143,7 @@ export async function generateConsultantPlan(
       meta: {
         status: "skipped",
         error:
-          "IA não configurada (GOOGLE_GENERATIVE_AI_API_KEY / GEMINI_API_KEY).",
+          "Consultora não configurada (GOOGLE_GENERATIVE_AI_API_KEY / GEMINI_API_KEY).",
       },
     };
   }
@@ -222,7 +222,7 @@ export async function generateConsultantPlan(
       meta: {
         status: "error",
         usedVision,
-        error: err instanceof Error ? err.message : "Falha na consultora IA.",
+        error: err instanceof Error ? err.message : "Falha na consultora.",
         generatedAt: new Date().toISOString(),
       },
     };
