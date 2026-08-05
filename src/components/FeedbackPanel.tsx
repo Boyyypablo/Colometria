@@ -47,14 +47,14 @@ function VoteButtons({
 }) {
   return (
     <li className="flex flex-wrap items-center justify-between gap-2 border-b border-[rgba(28,25,23,0.08)] py-2 last:border-0">
-      <span className="flex items-center gap-2 text-sm">
+      <span className="flex items-center gap-2 text-base">
         {hex ? <span className="swatch" style={{ background: hex }} /> : null}
         {label}
       </span>
       <span className="flex gap-1">
         <button
           type="button"
-          className={`btn btn-ghost px-2 py-1 text-xs ${
+          className={`btn btn-ghost px-3 py-1.5 text-sm ${
             current === "HELPED" ? "ring-1 ring-[var(--ok)]" : ""
           }`}
           disabled={busy}
@@ -65,7 +65,7 @@ function VoteButtons({
         </button>
         <button
           type="button"
-          className={`btn btn-ghost px-2 py-1 text-xs ${
+          className={`btn btn-ghost px-3 py-1.5 text-sm ${
             current === "DID_NOT_HELP" ? "ring-1 ring-[var(--warn)]" : ""
           }`}
           disabled={busy}
@@ -130,13 +130,29 @@ export function FeedbackPanel({
   return (
     <section className="space-y-4" aria-labelledby="feedback-heading">
       <div>
-        <h2 id="feedback-heading" className="font-display text-2xl">
+        <h2 id="feedback-heading" className="font-display text-3xl">
           Isso ajudou você?
         </h2>
-        <p className="mt-1 max-w-2xl text-sm text-[var(--muted)]">
+        <p className="mt-2 max-w-2xl text-lg text-[var(--muted)] leading-relaxed">
           Seu feedback calibra recomendações futuras — o que combina com você, não só a estação.
         </p>
       </div>
+
+      <label className="block space-y-2 text-base">
+        <span className="text-[var(--muted)]">
+          Comentário opcional (enviado com o próximo voto)
+        </span>
+        <input
+          className="input text-base"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          maxLength={1000}
+          placeholder="Ex.: o coral ficou ótimo no dia a dia"
+        />
+        <span className="text-sm text-[var(--muted)]">
+          Será enviado junto com o próximo “Ajudou” ou “Não ajudou”.
+        </span>
+      </label>
 
       <ul className="space-y-0">
         <VoteButtons
@@ -151,7 +167,7 @@ export function FeedbackPanel({
       {groups.map((group) =>
         group.items.length === 0 ? null : (
           <div key={group.title} className="space-y-1">
-            <h3 className="text-sm font-semibold">{group.title}</h3>
+            <h3 className="text-lg font-semibold">{group.title}</h3>
             <ul>
               {group.items.map((item) => {
                 const target = `${group.prefix}:${item.hex}`;
@@ -174,7 +190,7 @@ export function FeedbackPanel({
 
       {aiChanges.length > 0 ? (
         <div className="space-y-1">
-          <h3 className="text-sm font-semibold">Plano da consultora IA</h3>
+          <h3 className="text-lg font-semibold">Plano da consultora</h3>
           <ul>
             {aiChanges.map((item) => (
               <VoteButtons
@@ -193,7 +209,7 @@ export function FeedbackPanel({
 
       {corrections.length > 0 ? (
         <div className="space-y-1">
-          <h3 className="text-sm font-semibold">Cuidados com a pele</h3>
+          <h3 className="text-lg font-semibold">Cuidados com a pele</h3>
           <ul>
             {corrections.map((item) => (
               <VoteButtons
@@ -209,22 +225,6 @@ export function FeedbackPanel({
           </ul>
         </div>
       ) : null}
-
-      <label className="block space-y-1 text-sm">
-        <span className="text-[var(--muted)]">
-          Comentário opcional (enviado com o próximo voto)
-        </span>
-        <input
-          className="input"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          maxLength={1000}
-          placeholder="Ex.: o coral ficou ótimo no dia a dia"
-        />
-        <span className="text-xs text-[var(--muted)]">
-          Será enviado junto com o próximo “Ajudou” ou “Não ajudou”.
-        </span>
-      </label>
 
       {error ? <p className="text-sm text-[var(--warn)]">{error}</p> : null}
     </section>

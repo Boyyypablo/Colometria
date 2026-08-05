@@ -4,6 +4,9 @@ import { SimulationPanel } from "@/components/SimulationPanel";
 import { FeedbackPanel } from "@/components/FeedbackPanel";
 import { SkinCorrectionSection } from "@/components/SkinCorrectionSection";
 import { ConsultantPlanSection } from "@/components/ConsultantPlanSection";
+import { AnalysisAtmosphere } from "@/components/analysis/AnalysisAtmosphere";
+import { AnalysisNav } from "@/components/analysis/AnalysisNav";
+import { LandingReveal } from "@/components/LandingReveal";
 import {
   ConsultantReviewForm,
   RequestReviewButton,
@@ -47,6 +50,8 @@ const qualityBandLabel: Record<string, string> = {
   ruim: "ruim",
 };
 
+type RecItem = { hex: string; label: string; why?: string };
+
 export default async function AnalysisPage({ params }: Params) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
@@ -83,10 +88,10 @@ export default async function AnalysisPage({ params }: Params) {
     useColors?: string[];
     avoidColors?: string[];
     rankedUse?: Array<{ hex: string; score: number; why: string }>;
-    clothing?: Array<{ hex: string; label: string; why?: string }>;
-    lipstick?: Array<{ hex: string; label: string; why?: string }>;
-    eyeshadow?: Array<{ hex: string; label: string; why?: string }>;
-    base?: Array<{ hex: string; label: string; why?: string }>;
+    clothing?: RecItem[];
+    lipstick?: RecItem[];
+    eyeshadow?: RecItem[];
+    base?: RecItem[];
     skinCorrection?: SkinCorrectionBlock;
     ethicalNote?: string;
     coaching?: {
@@ -107,8 +112,6 @@ export default async function AnalysisPage({ params }: Params) {
     labUndertone?: { L: number; a: number; b: number };
     contrastScore?: number;
     contrastSource?: string;
-    labHair?: unknown;
-    labEyes?: unknown;
   } | null;
 
   const goals = parseAnalysisGoals(
@@ -158,9 +161,17 @@ export default async function AnalysisPage({ params }: Params) {
 
   const vto = getVtoRuntimeInfo();
 
+  const useColors = rec?.useColors || [];
+  const avoidColors = rec?.avoidColors || [];
+  const ambientColors = [
+    ...useColors,
+    ...(rec?.clothing || []).map((c) => c.hex),
+    ...(rec?.lipstick || []).map((c) => c.hex),
+  ].filter((hex, i, arr) => Boolean(hex) && arr.indexOf(hex) === i);
+
   const simulationColors = [
     ...(rec?.rankedUse || []).map((c) => c.hex),
-    ...(rec?.useColors || []),
+    ...useColors,
     ...(rec?.clothing || []).map((c) => c.hex),
     ...(rec?.lipstick || []).map((c) => c.hex),
   ].filter((hex, i, arr) => Boolean(hex) && arr.indexOf(hex) === i);
@@ -194,164 +205,156 @@ export default async function AnalysisPage({ params }: Params) {
     ] as const
   ).filter(([, tips]) => (tips || []).length > 0);
 
-  return (
-    <main>
-      <AppHeader />
-      <section className="shell space-y-6 py-8">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="badge">{statusLabels[analysis.status]}</p>
-            <h1 className="mt-2 font-display text-3xl md:text-4xl">
-              {season?.namePt || "Análise"}
-            </h1>
-            <p className="mt-2 max-w-2xl text-[var(--muted)]">
-              {rec?.description || season?.description}
-            </p>
-            {analysis.intention && !consultantPlan && (
-              <p className="mt-2 text-sm text-[var(--muted)]">
-                Intenção: {analysis.intention}
-              </p>
-            )}
-            {goalLabels.length > 0 && (
-              <p className="mt-2 text-sm text-[var(--muted)]">
-                Você pediu: {goalLabels.join(" · ")}
-              </p>
-            )}
-            {consultantMeta?.status === "error" && (
-              <p className="mt-2 text-sm text-[var(--warn)]">
-                A consultora IA não concluiu o plano — mostramos a paleta
-                medida. Tente de novo ou peça revisão.
-              </p>
-            )}
-            {consultantMeta?.status === "skipped" && (
-              <p className="mt-2 text-sm text-[var(--muted)]">
-                Plano IA indisponível neste ambiente — entregamos só a
-                colorimetria medida.
-              </p>
-            )}
-            {analysis.consultantApproved && (
-              <p className="mt-2 text-sm font-medium text-[var(--ok)]">
-                Validado pela consultora
-                {analysis.reviews[0]?.reviewer?.name
-                  ? ` · ${analysis.reviews[0].reviewer.name}`
-                  : ""}
-              </p>
-            )}
-            {analysis.reviews[0]?.notes && (
-              <p className="mt-3 max-w-2xl rounded-xl bg-[rgba(154,52,18,0.06)] p-3 text-sm leading-relaxed">
-                <span className="font-medium">Notas da consultora: </span>
-                {analysis.reviews[0].notes}
-              </p>
-            )}
-          </div>
-          {isOwner && analysis.status === "READY" && (
-            <RequestReviewButton analysisId={analysis.id} />
-          )}
-        </div>
+  const lookGroups: Array<{ title: string; items: RecItem[] }> = [
+    { title: "Roupas", items: rec?.clothing || [] },
+    { title: "Batons", items: rec?.lipstick || [] },
+    {
+      title: "Sombras e base",
+      items: [...(rec?.eyeshadow || []), ...(rec?.base || [])],
+    },
+  ].filter((g) => g.items.length > 0);
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="card space-y-3">
-            <h2 className="font-display text-xl">Sua foto</h2>
+  const navItems = [
+    consultantPlan ? { href: "#plano", label: "Plano" } : null,
+    useColors.length > 0 ? { href: "#paleta", label: "Paleta" } : null,
+    coachingBlocks.length > 0 ? { href: "#orientacoes", label: "Orientações" } : null,
+    lookGroups.length > 0 ? { href: "#looks", label: "Looks" } : null,
+    isOwner && simulationColors.length > 0
+      ? { href: "#simular", label: "Simular" }
+      : null,
+    isOwner ? { href: "#feedback", label: "Feedback" } : null,
+  ].filter(Boolean) as Array<{ href: string; label: string }>;
+
+  const railColors = ambientColors.slice(0, 8);
+
+  return (
+    <main className="analysis-result">
+      <AnalysisAtmosphere colors={ambientColors} />
+      <AppHeader />
+      <section className="shell space-y-2 pb-16 pt-6">
+        <LandingReveal className="analysis-hero">
+          <div className="analysis-hero__frame">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={`/api/uploads/${analysis.imagePath}`}
               alt="Foto enviada"
-              className="max-h-[420px] rounded-xl object-contain"
+              className="analysis-hero__photo"
             />
-            {quality?.warnings && quality.warnings.length > 0 && (
-              <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--warn)]">
-                {quality.warnings.map((w) => (
-                  <li key={w}>{w}</li>
+            {railColors.length > 0 && (
+              <div className="analysis-hero__rail" aria-hidden>
+                {railColors.map((hex) => (
+                  <span key={hex} style={{ background: hex }} />
                 ))}
-              </ul>
-            )}
-            {quality?.failedTips && quality.failedTips.length > 0 && (
-              <div className="rounded-xl bg-[rgba(154,52,18,0.06)] p-3 text-sm">
-                <p className="font-medium">Para a próxima foto:</p>
-                <ul className="mt-1 list-disc space-y-1 pl-5 text-[var(--muted)]">
-                  {quality.failedTips.map((t) => (
-                    <li key={t}>{t}</li>
-                  ))}
-                </ul>
               </div>
             )}
           </div>
 
-          <div className="space-y-4">
-            <div className="card space-y-2">
-              <h2 className="font-display text-xl">Seu resultado</h2>
-              <p className="text-sm">
-                Subtom: <strong>{analysis.undertoneLabel || "—"}</strong>
-              </p>
-              {rec?.undertoneHint && (
-                <p className="text-sm text-[var(--muted)]">{rec.undertoneHint}</p>
+          <div className="analysis-hero__copy">
+            <p className="badge">{statusLabels[analysis.status]}</p>
+            <h1 className="analysis-hero__season">
+              {season?.namePt || "Análise"}
+            </h1>
+            <p className="analysis-hero__lede">
+              {rec?.description || season?.description}
+            </p>
+
+            <div className="analysis-meta-chips">
+              {analysis.undertoneLabel && (
+                <span className="analysis-meta-chip">
+                  Subtom {analysis.undertoneLabel}
+                </span>
               )}
-              {isStaff && confidenceUi && (
-                <p className="text-sm text-[var(--muted)]">
-                  Confiança (interno): {confidenceUi.percent}% · {confidenceUi.band}
-                </p>
-              )}
-              {!isStaff &&
-                confidenceUi &&
-                confidenceUi.band === "baixa" && (
-                  <p className="text-sm text-[var(--warn)]">
-                    Estimativa com baixa certeza — uma consultora pode revisar.
-                  </p>
-                )}
-              {rec?.coaching?.sisterNote && (
-                <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
-                  {rec.coaching.sisterNote}
-                </p>
+              {goalLabels.slice(0, 3).map((g) => (
+                <span key={g} className="analysis-meta-chip">
+                  {g}
+                </span>
+              ))}
+              {analysis.consultantApproved && (
+                <span className="analysis-meta-chip" style={{ color: "var(--ok)" }}>
+                  Validado
+                  {analysis.reviews[0]?.reviewer?.name
+                    ? ` · ${analysis.reviews[0].reviewer.name}`
+                    : ""}
+                </span>
               )}
             </div>
 
-            <div className="card space-y-3">
-              <h2 className="font-display text-xl">Melhor em você</h2>
-              {(rec?.useColors || []).length === 0 ? (
-                <p className="text-sm text-[var(--muted)]">
-                  Harmonia de cores não foi pedida nesta análise.
+            {rec?.undertoneHint && (
+              <p className="mt-4 analysis-body--muted">
+                {rec.undertoneHint}
+              </p>
+            )}
+            {rec?.coaching?.sisterNote && (
+              <p className="mt-3 analysis-body--muted">
+                {rec.coaching.sisterNote}
+              </p>
+            )}
+            {analysis.intention && !consultantPlan && (
+              <p className="mt-3 analysis-body--muted">
+                Intenção: {analysis.intention}
+              </p>
+            )}
+            {consultantMeta?.status === "error" && (
+              <p className="mt-3 analysis-body text-[var(--warn)]">
+                A consultora não concluiu o plano — mostramos a paleta medida.
+              </p>
+            )}
+            {consultantMeta?.status === "skipped" && (
+              <p className="mt-3 analysis-body--muted">
+                Plano personalizado indisponível — entregamos a colorimetria
+                medida.
+              </p>
+            )}
+            {analysis.reviews[0]?.notes && (
+              <p className="mt-4 rounded-2xl bg-[rgba(154,52,18,0.06)] p-4 analysis-body leading-relaxed">
+                <span className="font-medium">Notas da consultora: </span>
+                {analysis.reviews[0].notes}
+              </p>
+            )}
+            {!isStaff &&
+              confidenceUi &&
+              confidenceUi.band === "baixa" && (
+                <p className="mt-3 analysis-body text-[var(--warn)]">
+                  Estimativa com baixa certeza — uma consultora pode revisar.
                 </p>
-              ) : (
-                <>
-                  <div className="flex flex-wrap gap-2">
-                    {(rec?.useColors || []).map((c) => (
-                      <span
-                        key={c}
-                        className="swatch"
-                        style={{ background: c }}
-                        title={isStaff ? c : undefined}
-                      />
-                    ))}
-                  </div>
-                  {(rec?.rankedUse || []).length > 0 && (
-                    <ul className="space-y-2 pt-1 text-sm">
-                      {(rec?.rankedUse || []).slice(0, 4).map((r) => (
-                        <li key={r.hex} className="flex items-start gap-3">
-                          <span
-                            className="swatch mt-0.5 shrink-0"
-                            style={{ background: r.hex }}
-                          />
-                          <span className="text-[var(--muted)]">{r.why}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  <h3 className="pt-2 text-sm font-semibold">Evitar</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {(rec?.avoidColors || []).map((c) => (
-                      <span
-                        key={c}
-                        className="swatch"
-                        style={{ background: c }}
-                        title={isStaff ? c : undefined}
-                      />
-                    ))}
-                  </div>
-                </>
+              )}
+            {isStaff && confidenceUi && (
+              <p className="mt-3 analysis-body--muted">
+                Confiança (interno): {confidenceUi.percent}% · {confidenceUi.band}
+              </p>
+            )}
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              {isOwner && analysis.status === "READY" && (
+                <RequestReviewButton analysisId={analysis.id} />
               )}
             </div>
+
+            {(quality?.warnings?.length || quality?.failedTips?.length) && (
+              <div className="mt-5 space-y-2 analysis-body">
+                {quality.warnings && quality.warnings.length > 0 && (
+                  <ul className="list-disc space-y-1 pl-5 text-[var(--warn)]">
+                    {quality.warnings.map((w) => (
+                      <li key={w}>{w}</li>
+                    ))}
+                  </ul>
+                )}
+                {quality.failedTips && quality.failedTips.length > 0 && (
+                  <div className="rounded-2xl bg-[rgba(154,52,18,0.06)] p-4">
+                    <p className="font-medium">Para a próxima foto</p>
+                    <ul className="mt-1 list-disc space-y-1 pl-5 text-[var(--muted)]">
+                      {quality.failedTips.map((t) => (
+                        <li key={t}>{t}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        </div>
+        </LandingReveal>
+
+        <AnalysisNav items={navItems} />
 
         {consultantPlan && (
           <ConsultantPlanSection
@@ -362,10 +365,62 @@ export default async function AnalysisPage({ params }: Params) {
           />
         )}
 
+        {useColors.length > 0 && (
+          <LandingReveal className="analysis-section" id="paleta" delay={0.05}>
+            <h2 className="analysis-section__title">Paleta em você</h2>
+            <p className="analysis-section__hint">
+              Cores que harmonizam com o subtom medido — e as que costumam
+              competir.
+            </p>
+            <div className="analysis-palette">
+              {useColors.map((c) => (
+                <span
+                  key={c}
+                  className="analysis-palette__swatch"
+                  style={{ background: c }}
+                  title={isStaff ? c : undefined}
+                />
+              ))}
+            </div>
+            <div className="analysis-palette__meta">
+              {(rec?.rankedUse || []).length > 0 && (
+                <ul className="space-y-3 analysis-body--muted">
+                  {(rec?.rankedUse || []).slice(0, 4).map((r) => (
+                    <li key={r.hex} className="flex items-start gap-3">
+                      <span
+                        className="swatch mt-0.5 shrink-0"
+                        style={{ background: r.hex }}
+                      />
+                      <span>{r.why}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {avoidColors.length > 0 && (
+                <div>
+                  <h3 className="analysis-kicker text-[var(--ink)]">
+                    Evitar perto do rosto
+                  </h3>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {avoidColors.map((c) => (
+                      <span
+                        key={c}
+                        className="swatch"
+                        style={{ background: c }}
+                        title={isStaff ? c : undefined}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </LandingReveal>
+        )}
+
         {isStaff && (
-          <div className="card space-y-2 border-dashed">
-            <h2 className="font-display text-lg">Painel técnico</h2>
-            <p className="text-sm text-[var(--muted)]">
+          <div className="analysis-panel border-dashed">
+            <h2 className="font-display text-xl">Painel técnico</h2>
+            <p className="mt-2 analysis-body--muted">
               Contexto: {analysis.context}
               {features?.contrastScore != null
                 ? ` · Contraste ${features.contrastScore.toFixed(0)}`
@@ -380,100 +435,110 @@ export default async function AnalysisPage({ params }: Params) {
                 ? ` · Qualidade ${qualityBandLabel[quality.qualityBand] || quality.qualityBand}`
                 : ""}
               {consultantMeta?.status
-                ? ` · IA ${consultantMeta.status}${consultantMeta.usedVision ? "+visão" : ""}`
+                ? ` · Consultora ${consultantMeta.status}${consultantMeta.usedVision ? "+foto" : ""}`
                 : ""}
             </p>
             {consultantMeta?.error && (
-              <p className="text-xs text-[var(--warn)]">{consultantMeta.error}</p>
+              <p className="mt-1 text-sm text-[var(--warn)]">
+                {consultantMeta.error}
+              </p>
             )}
           </div>
         )}
 
         {coachingBlocks.length > 0 && (
-          <div className="card space-y-4">
-            <h2 className="font-display text-xl">Orientações</h2>
-            {rec?.coaching?.contrastTip && !isStaff && (
-              <p className="text-sm text-[var(--muted)]">
-                {rec.coaching.contrastTip.includes("—")
-                  ? rec.coaching.contrastTip.split("—")[0].trim() + "."
-                  : rec.coaching.contrastTip}
-              </p>
-            )}
-            {rec?.coaching?.contrastTip && isStaff && (
-              <p className="text-sm text-[var(--muted)]">
-                {rec.coaching.contrastTip}
-              </p>
-            )}
-            {coachingBlocks.map(([title, tips]) => (
-              <div key={title}>
-                <h3 className="text-sm font-semibold">{title}</h3>
-                <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[var(--muted)]">
-                  {(tips || []).map((t) => (
-                    <li key={t}>{t}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+          <LandingReveal
+            className="analysis-section"
+            id="orientacoes"
+            delay={0.05}
+          >
+            <h2 className="analysis-section__title">Orientações</h2>
+            <p className="analysis-section__hint">
+              Como usar contraste, estilo e make a favor da sua estação.
+            </p>
+            <div className="analysis-panel space-y-5">
+              {rec?.coaching?.contrastTip && !isStaff && (
+                <p className="analysis-body--muted">
+                  {rec.coaching.contrastTip.includes("—")
+                    ? rec.coaching.contrastTip.split("—")[0].trim() + "."
+                    : rec.coaching.contrastTip}
+                </p>
+              )}
+              {rec?.coaching?.contrastTip && isStaff && (
+                <p className="analysis-body--muted">
+                  {rec.coaching.contrastTip}
+                </p>
+              )}
+              {coachingBlocks.map(([title, tips]) => (
+                <div key={title}>
+                  <h3 className="text-lg font-semibold">{title}</h3>
+                  <ul className="mt-2 list-disc space-y-1.5 pl-5 analysis-body--muted">
+                    {(tips || []).map((t) => (
+                      <li key={t}>{t}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </LandingReveal>
         )}
 
         {skinCorrection && (
-          <div className="space-y-3">
+          <LandingReveal className="analysis-section space-y-3">
             <SkinCorrectionSection block={skinCorrection} />
-            <p className="text-xs text-[var(--muted)]">
+            <p className="analysis-body--muted text-base">
               {rec?.ethicalNote ||
                 "Não é diagnóstico dermatológico nem substitui consultoria presencial."}
             </p>
-          </div>
+          </LandingReveal>
         )}
 
-        <div className="grid gap-4 md:grid-cols-3">
-          {(
-            [
-              ["Roupas", rec?.clothing],
-              ["Batons", rec?.lipstick],
-              [
-                "Sombras / base",
-                [...(rec?.eyeshadow || []), ...(rec?.base || [])],
-              ],
-            ] as const
-          )
-            .filter(([, items]) => (items || []).length > 0)
-            .map(([title, items]) => (
-              <div key={title} className="card space-y-3">
-                <h2 className="font-display text-lg">{title}</h2>
-                <ul className="space-y-2">
-                  {(items || []).map((item) => (
-                    <li
-                      key={`${item.label}-${item.hex}`}
-                      className="flex items-start gap-3 text-sm"
-                    >
-                      <span
-                        className="swatch mt-0.5 shrink-0"
-                        style={{ background: item.hex }}
-                      />
-                      <span>
-                        <span>{item.label}</span>
-                        {"why" in item && item.why ? (
-                          <span className="mt-0.5 block text-[var(--muted)]">
-                            {item.why}
-                          </span>
-                        ) : null}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-        </div>
+        {lookGroups.length > 0 && (
+          <LandingReveal className="analysis-section" id="looks" delay={0.05}>
+            <h2 className="analysis-section__title">Looks sugeridos</h2>
+            <p className="analysis-section__hint">
+              Peças e maquiagem alinhadas à cartela — com o porquê de cada tom.
+            </p>
+            <div className="space-y-8">
+              {lookGroups.map((group) => (
+                <div key={group.title} className="analysis-look-row">
+                  <h3 className="analysis-look-row__label">{group.title}</h3>
+                  <ul className="analysis-look-row__items">
+                    {group.items.map((item) => (
+                      <li
+                        key={`${item.label}-${item.hex}`}
+                        className="analysis-look-item"
+                      >
+                        <span
+                          className="swatch"
+                          style={{ background: item.hex }}
+                        />
+                        <span>
+                          <span className="font-medium text-lg">{item.label}</span>
+                          {item.why ? (
+                            <span className="mt-1 block analysis-body--muted">
+                              {item.why}
+                            </span>
+                          ) : null}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </LandingReveal>
+        )}
 
         {isOwner && simulationColors.length > 0 && (
-          <SimulationPanel
-            analysisId={analysis.id}
-            colors={simulationColors}
-            vtoProvider={vto.provider}
-            aiReady={vto.aiReady}
-          />
+          <LandingReveal className="analysis-section" id="simular">
+            <SimulationPanel
+              analysisId={analysis.id}
+              colors={simulationColors}
+              vtoProvider={vto.provider}
+              aiReady={vto.aiReady}
+            />
+          </LandingReveal>
         )}
 
         {isOwner &&
@@ -481,37 +546,41 @@ export default async function AnalysisPage({ params }: Params) {
             analysis.status === "NEEDS_REVIEW" ||
             analysis.status === "APPROVED") &&
           season && (
-            <FeedbackPanel
-              analysisId={analysis.id}
-              seasonName={season.namePt}
-              clothing={rec?.clothing || []}
-              lipstick={rec?.lipstick || []}
-              eyeshadow={rec?.eyeshadow || []}
-              base={rec?.base || []}
-              corrections={(skinCorrection?.items || []).map((i) => ({
-                hex: i.hex,
-                label: i.label,
-                target: i.target,
-              }))}
-              aiChanges={(consultantPlan?.changes || []).map((c) => ({
-                id: c.id,
-                label: c.suggestion,
-                target: consultantChangeTarget(c.id),
-                hex: c.colors[0],
-              }))}
-              initialVotes={analysis.feedbackEvents.map((e) => ({
-                target: e.target,
-                kind: e.kind as "HELPED" | "DID_NOT_HELP",
-              }))}
-            />
+            <LandingReveal className="analysis-section" id="feedback">
+              <FeedbackPanel
+                analysisId={analysis.id}
+                seasonName={season.namePt}
+                clothing={rec?.clothing || []}
+                lipstick={rec?.lipstick || []}
+                eyeshadow={rec?.eyeshadow || []}
+                base={rec?.base || []}
+                corrections={(skinCorrection?.items || []).map((i) => ({
+                  hex: i.hex,
+                  label: i.label,
+                  target: i.target,
+                }))}
+                aiChanges={(consultantPlan?.changes || []).map((c) => ({
+                  id: c.id,
+                  label: c.suggestion,
+                  target: consultantChangeTarget(c.id),
+                  hex: c.colors[0],
+                }))}
+                initialVotes={analysis.feedbackEvents.map((e) => ({
+                  target: e.target,
+                  kind: e.kind as "HELPED" | "DID_NOT_HELP",
+                }))}
+              />
+            </LandingReveal>
           )}
 
         {isStaff && analysis.status !== "APPROVED" && (
-          <ConsultantReviewForm
-            analysisId={analysis.id}
-            seasons={seasons}
-            currentSeasonId={analysis.overrideSeasonId || analysis.seasonId}
-          />
+          <div className="analysis-section">
+            <ConsultantReviewForm
+              analysisId={analysis.id}
+              seasons={seasons}
+              currentSeasonId={analysis.overrideSeasonId || analysis.seasonId}
+            />
+          </div>
         )}
       </section>
     </main>

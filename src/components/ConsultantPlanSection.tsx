@@ -1,5 +1,7 @@
 "use client";
 
+import { LandingReveal } from "@/components/LandingReveal";
+
 type Priority = {
   trait: string;
   action: "suavizar" | "exaltar" | "manter";
@@ -44,81 +46,90 @@ export function ConsultantPlanSection({
   usedVision,
 }: Props) {
   return (
-    <div className="card space-y-5">
-      <div>
-        <p className="badge">Consultora IA</p>
-        <h2 className="mt-2 font-display text-xl">Plano personalizado</h2>
+    <LandingReveal className="analysis-section" id="plano">
+      <p className="badge">Consultora</p>
+      <h2 className="analysis-section__title">Plano personalizado</h2>
+      <p className="analysis-section__hint">
+        Decisões sob medida a partir da sua intenção e da colorimetria medida.
+      </p>
+
+      <div className="analysis-panel space-y-5">
         {intention ? (
-          <p className="mt-2 text-sm text-[var(--muted)]">
-            Sua intenção: <span className="text-[var(--fg)]">{intention}</span>
+          <p className="analysis-body--muted">
+            Sua intenção:{" "}
+            <span className="font-medium text-[var(--ink)]">{intention}</span>
           </p>
         ) : null}
-        <p className="mt-3 text-sm leading-relaxed">{plan.assessment}</p>
-        <p className="mt-2 text-sm text-[var(--muted)]">{plan.seasonAlignment}</p>
+        <p className="analysis-body">{plan.assessment}</p>
+        <p className="analysis-body--muted">{plan.seasonAlignment}</p>
         {plan.needsHumanReview && (
-          <p className="mt-2 text-sm text-[var(--warn)]">
+          <p className="analysis-body text-[var(--warn)]">
             Esta análise pediu revisão humana — uma consultora pode refinar o
             plano.
           </p>
         )}
+
+        <div>
+          <h3 className="analysis-kicker">Prioridades</h3>
+          <ul className="analysis-priority-grid mt-3">
+            {plan.priorities.map((p) => (
+              <li key={`${p.trait}-${p.action}`} className="analysis-priority">
+                <span className="font-medium">
+                  {ACTION_LABEL[p.action]} · {p.trait}
+                </span>
+                <span className="mt-1.5 block text-[var(--muted)]">{p.why}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h3 className="analysis-kicker">Mudanças sugeridas</h3>
+          <ul className="mt-2">
+            {plan.changes.map((c) => (
+              <li key={c.id} className="analysis-change">
+                <div>
+                  <p className="analysis-kicker uppercase tracking-wide">
+                    {c.area}
+                  </p>
+                  <p className="mt-1.5 text-lg font-medium leading-snug">
+                    {c.suggestion}
+                  </p>
+                  {c.colors.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {c.colors.map((hex) => (
+                        <span
+                          key={hex}
+                          className="swatch"
+                          style={{ background: hex }}
+                          title={hex}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-2 analysis-body--muted">
+                  <p>
+                    <span className="font-medium text-[var(--ink)]">Fazer: </span>
+                    {c.do}
+                  </p>
+                  <p>
+                    <span className="font-medium text-[var(--ink)]">Evitar: </span>
+                    {c.dont}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+
         {(metaStatus || usedVision) && (
-          <p className="mt-2 text-xs text-[var(--muted)]">
-            {usedVision ? "Com leitura da foto · " : "Só fatos do motor · "}
+          <p className="text-sm text-[var(--muted)]">
+            {usedVision ? "Com leitura da foto · " : "Só fatos medidos · "}
             {metaStatus === "ok" ? "gerado agora" : metaStatus}
           </p>
         )}
       </div>
-
-      <div>
-        <h3 className="text-sm font-semibold">Prioridades</h3>
-        <ul className="mt-2 space-y-2">
-          {plan.priorities.map((p) => (
-            <li
-              key={`${p.trait}-${p.action}`}
-              className="rounded-xl bg-[rgba(28,25,23,0.04)] px-3 py-2 text-sm"
-            >
-              <span className="font-medium">
-                {ACTION_LABEL[p.action]} · {p.trait}
-              </span>
-              <span className="mt-1 block text-[var(--muted)]">{p.why}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div>
-        <h3 className="text-sm font-semibold">Mudanças sugeridas</h3>
-        <ul className="mt-3 space-y-4">
-          {plan.changes.map((c) => (
-            <li key={c.id} className="border-t border-[var(--line)] pt-3 first:border-0 first:pt-0">
-              <p className="text-xs uppercase tracking-wide text-[var(--muted)]">
-                {c.area}
-              </p>
-              <p className="mt-1 text-sm font-medium">{c.suggestion}</p>
-              {c.colors.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {c.colors.map((hex) => (
-                    <span
-                      key={hex}
-                      className="swatch"
-                      style={{ background: hex }}
-                      title={hex}
-                    />
-                  ))}
-                </div>
-              )}
-              <p className="mt-2 text-sm text-[var(--muted)]">
-                <span className="font-medium text-[var(--fg)]">Fazer: </span>
-                {c.do}
-              </p>
-              <p className="mt-1 text-sm text-[var(--muted)]">
-                <span className="font-medium text-[var(--fg)]">Evitar: </span>
-                {c.dont}
-              </p>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
+    </LandingReveal>
   );
 }

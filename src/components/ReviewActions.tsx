@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
 
 type Season = { id: string; namePt: string };
 
@@ -79,8 +80,8 @@ export function ConsultantReviewForm({
           </option>
         ))}
       </select>
-      <textarea
-        className="input min-h-[90px]"
+      <Textarea
+        className="min-h-24 bg-[#fffdf9]"
         placeholder="Notas para a usuária"
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
