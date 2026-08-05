@@ -27,12 +27,14 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.34",
     "@fal-ai/client": "^1.10.1",
     "@huggingface/inference": "^4.13.24",
     "@prisma/client": "^6.19.3",
     "@tensorflow-models/blazeface": "^0.1.0",
     "@tensorflow/tfjs": "^4.22.0",
     "@vercel/blob": "^2.6.1",
+    "ai": "^7.0.52",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "motion": "^12.43.0",

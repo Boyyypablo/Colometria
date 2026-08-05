@@ -3,6 +3,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { SimulationPanel } from "@/components/SimulationPanel";
 import { FeedbackPanel } from "@/components/FeedbackPanel";
 import { SkinCorrectionSection } from "@/components/SkinCorrectionSection";
+import { ConsultantPlanSection } from "@/components/ConsultantPlanSection";
 import {
   ConsultantReviewForm,
   RequestReviewButton,
@@ -15,6 +16,11 @@ import {
   parseAnalysisGoals,
   wantsSkinCorrection,
 } from "@/lib/color/goals";
+import { parseConsultantPlan } from "@/lib/ai/consultant";
+import {
+  consultantChangeTarget,
+  type ConsultantPlanMeta,
+} from "@/lib/ai/consultant-plan-schema";
 import { prisma } from "@/lib/db/prisma";
 import type { SkinCorrectionBlock } from "@/lib/color/skin-correction";
 import { getVtoRuntimeInfo } from "@/lib/vto/simulate";
@@ -110,16 +116,22 @@ export default async function AnalysisPage({ params }: Params) {
       ? (rec as { goals: string[] }).goals
       : analysis.goals,
   );
-  const skinCorrection: SkinCorrectionBlock | null =
-    (rec?.skinCorrection as SkinCorrectionBlock | null | undefined) ??
-    (season && wantsSkinCorrection(goals)
-      ? buildSkinCorrection({
-          temperature: season.temperature === "cool" ? "cool" : "warm",
-          temperatureScore: features?.temperatureScore,
-          skinL: features?.labUndertone?.L,
-          goals,
-        })
-      : null);
+
+  const consultantPlan = parseConsultantPlan(analysis.consultantPlan);
+  const consultantMeta =
+    (analysis.consultantPlanMeta as ConsultantPlanMeta | null) ?? null;
+
+  const skinCorrection: SkinCorrectionBlock | null = consultantPlan
+    ? (rec?.skinCorrection as SkinCorrectionBlock | null | undefined) ?? null
+    : (rec?.skinCorrection as SkinCorrectionBlock | null | undefined) ??
+      (season && wantsSkinCorrection(goals)
+        ? buildSkinCorrection({
+            temperature: season.temperature === "cool" ? "cool" : "warm",
+            temperatureScore: features?.temperatureScore,
+            skinL: features?.labUndertone?.L,
+            goals,
+          })
+        : null);
 
   const goalLabels = ANALYSIS_GOAL_OPTIONS.filter((o) =>
     goals.includes(o.id),
@@ -195,9 +207,26 @@ export default async function AnalysisPage({ params }: Params) {
             <p className="mt-2 max-w-2xl text-[var(--muted)]">
               {rec?.description || season?.description}
             </p>
+            {analysis.intention && !consultantPlan && (
+              <p className="mt-2 text-sm text-[var(--muted)]">
+                Intenção: {analysis.intention}
+              </p>
+            )}
             {goalLabels.length > 0 && (
               <p className="mt-2 text-sm text-[var(--muted)]">
                 Você pediu: {goalLabels.join(" · ")}
+              </p>
+            )}
+            {consultantMeta?.status === "error" && (
+              <p className="mt-2 text-sm text-[var(--warn)]">
+                A consultora IA não concluiu o plano — mostramos a paleta
+                medida. Tente de novo ou peça revisão.
+              </p>
+            )}
+            {consultantMeta?.status === "skipped" && (
+              <p className="mt-2 text-sm text-[var(--muted)]">
+                Plano IA indisponível neste ambiente — entregamos só a
+                colorimetria medida.
               </p>
             )}
             {analysis.consultantApproved && (
@@ -324,6 +353,15 @@ export default async function AnalysisPage({ params }: Params) {
           </div>
         </div>
 
+        {consultantPlan && (
+          <ConsultantPlanSection
+            plan={consultantPlan}
+            intention={analysis.intention}
+            metaStatus={consultantMeta?.status}
+            usedVision={consultantMeta?.usedVision}
+          />
+        )}
+
         {isStaff && (
           <div className="card space-y-2 border-dashed">
             <h2 className="font-display text-lg">Painel técnico</h2>
@@ -341,7 +379,13 @@ export default async function AnalysisPage({ params }: Params) {
               {quality?.qualityBand
                 ? ` · Qualidade ${qualityBandLabel[quality.qualityBand] || quality.qualityBand}`
                 : ""}
+              {consultantMeta?.status
+                ? ` · IA ${consultantMeta.status}${consultantMeta.usedVision ? "+visão" : ""}`
+                : ""}
             </p>
+            {consultantMeta?.error && (
+              <p className="text-xs text-[var(--warn)]">{consultantMeta.error}</p>
+            )}
           </div>
         )}
 
@@ -448,6 +492,12 @@ export default async function AnalysisPage({ params }: Params) {
                 hex: i.hex,
                 label: i.label,
                 target: i.target,
+              }))}
+              aiChanges={(consultantPlan?.changes || []).map((c) => ({
+                id: c.id,
+                label: c.suggestion,
+                target: consultantChangeTarget(c.id),
+                hex: c.colors[0],
               }))}
               initialVotes={analysis.feedbackEvents.map((e) => ({
                 target: e.target,

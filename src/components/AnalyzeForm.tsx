@@ -16,6 +16,7 @@ export function AnalyzeForm() {
   const [goals, setGoals] = useState<AnalysisGoalId[]>([
     ...DEFAULT_ANALYSIS_GOALS,
   ]);
+  const [intention, setIntention] = useState("");
   const [tipsOk, setTipsOk] = useState(false);
 
   function toggleGoal(id: AnalysisGoalId) {
@@ -26,6 +27,12 @@ export function AnalyzeForm() {
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (intention.trim().length < 8) {
+      setError(
+        "Conte o que você quer trabalhar (ex.: valorizar o olhar, suavizar olheiras).",
+      );
+      return;
+    }
     if (goals.length === 0) {
       setError("Selecione pelo menos um objetivo para a análise.");
       return;
@@ -43,6 +50,7 @@ export function AnalyzeForm() {
       fd.get("biometricConsent") === "on" ? "true" : "false",
     );
     fd.set("photoTipsConfirmed", "true");
+    fd.set("intention", intention.trim());
     for (const g of goals) {
       fd.append("goals", g);
     }
@@ -100,11 +108,32 @@ export function AnalyzeForm() {
         </label>
       </fieldset>
 
+      <div>
+        <label className="label" htmlFor="intention">
+          O que você quer trabalhar?
+        </label>
+        <p className="mb-2 text-sm text-[var(--muted)]">
+          A consultora IA usa isso para decidir o que suavizar, exaltar ou
+          manter — não é um checklist fixo.
+        </p>
+        <textarea
+          id="intention"
+          name="intention"
+          className="input min-h-[96px]"
+          required
+          minLength={8}
+          maxLength={600}
+          value={intention}
+          onChange={(e) => setIntention(e.target.value)}
+          placeholder="Ex.: quero valorizar o olhar e suavizar olheiras sem parecer maquiada demais"
+        />
+      </div>
+
       <fieldset className="space-y-3">
-        <legend className="label">O que você quer otimizar?</legend>
+        <legend className="label">Áreas de foco (opcional)</legend>
         <p className="text-sm text-[var(--muted)]">
-          Marque só o que importa agora. Olheiras, manchas e vermelhidão só
-          entram se você pedir — nada é imposto.
+          Marque o que importa agora. Isso ajuda a IA e filtra a paleta —
+          olheiras/manchas só entram se você pedir.
         </p>
         <ul className="space-y-2">
           {ANALYSIS_GOAL_OPTIONS.map((opt) => {
@@ -147,8 +176,9 @@ export function AnalyzeForm() {
       <label className="flex items-start gap-2 text-sm text-[var(--muted)]">
         <input name="biometricConsent" type="checkbox" className="mt-1" required />
         <span>
-          Autorizo o uso da foto do meu rosto só para colorimetria e simulação
-          neste serviço. As imagens ficam privadas (não são públicas).
+          Autorizo o uso da foto do meu rosto para colorimetria, simulação e,
+          quando necessário, análise por IA de visão (para personalizar o plano
+          de traços/pele). As imagens ficam privadas (não são públicas).
         </span>
       </label>
       {error && <p className="text-sm text-red-700">{error}</p>}

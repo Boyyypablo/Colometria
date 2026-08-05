@@ -1,13 +1,25 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { saveUserImage } from "@/lib/storage/local";
 import { analyzeImageBuffer } from "@/lib/color/classifier";
 import { parseAnalysisGoals } from "@/lib/color/goals";
 import { buildRecommendations, getSeasonById } from "@/lib/color/recommendations";
+import { generateConsultantPlan } from "@/lib/ai/consultant";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
+
+const INTENTION_MAX = 600;
+
+function parseIntention(raw: FormDataEntryValue | null): string {
+  return String(raw || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .slice(0, INTENTION_MAX);
+}
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -40,10 +52,21 @@ export async function POST(request: Request) {
     contextRaw === "trabalho" || contextRaw === "noite" ? contextRaw : "casual";
   const consent = form.get("biometricConsent") === "true";
   const goals = parseAnalysisGoals(form.getAll("goals"));
+  const intention = parseIntention(form.get("intention"));
 
   if (!consent) {
     return NextResponse.json(
       { error: "Confirme o consentimento para processamento biométrico da foto." },
+      { status: 400 },
+    );
+  }
+
+  if (intention.length < 8) {
+    return NextResponse.json(
+      {
+        error:
+          "Conte em poucas palavras o que você quer trabalhar (ex.: valorizar o olhar, suavizar olheiras).",
+      },
       { status: 400 },
     );
   }
@@ -62,6 +85,12 @@ export async function POST(request: Request) {
 
   const buffer = Buffer.from(await file.arrayBuffer());
   const ext = file.type.includes("png") ? "png" : "jpg";
+  const imageMediaType =
+    file.type === "image/png"
+      ? ("image/png" as const)
+      : file.type === "image/webp"
+        ? ("image/webp" as const)
+        : ("image/jpeg" as const);
   const imagePath = await saveUserImage(session.user.id, buffer, ext);
 
   const pending = await prisma.analysis.create({
@@ -71,6 +100,7 @@ export async function POST(request: Request) {
       status: "PENDING",
       context,
       goals,
+      intention,
     },
   });
 
@@ -81,14 +111,45 @@ export async function POST(request: Request) {
       throw new Error("Estação não encontrada");
     }
 
-    const recommendations = buildRecommendations(season, context, {
+    let recommendations = buildRecommendations(season, context, {
       temperatureScore: result.features.temperatureScore,
       goals,
       skinLab: result.features.labUndertone,
       valueScore: result.features.valueScore,
       contrastScore: result.features.contrastScore,
     });
-    const status = result.needsReview ? "NEEDS_REVIEW" : "READY";
+
+    const ai = await generateConsultantPlan({
+      intention,
+      goals,
+      context,
+      seasonId: season.id,
+      seasonName: season.namePt,
+      undertoneLabel: result.undertoneLabel,
+      confidence: result.confidence,
+      features: result.features,
+      photoQuality: result.photoQuality as unknown as Record<string, unknown>,
+      imageBuffer: buffer,
+      imageMediaType,
+    });
+
+    // Com plano IA ok, a correção de pele deixa de ser o catálogo fixo.
+    if (ai.plan) {
+      recommendations = {
+        ...recommendations,
+        skinCorrection: null,
+        coaching: {
+          ...recommendations.coaching,
+          attentionRedirectTips: [],
+        },
+      };
+    }
+
+    const needsReview =
+      result.needsReview ||
+      Boolean(ai.plan?.needsHumanReview) ||
+      ai.meta.status === "error";
+    const status = needsReview ? "NEEDS_REVIEW" : "READY";
 
     const analysis = await prisma.analysis.update({
       where: { id: pending.id },
@@ -102,6 +163,8 @@ export async function POST(request: Request) {
         recommendations,
         detectorProvider: result.photoQuality.detectorProvider,
         predictorId: result.predictorId,
+        consultantPlan: ai.plan ?? Prisma.JsonNull,
+        consultantPlanMeta: ai.meta,
       },
       include: {
         season: true,

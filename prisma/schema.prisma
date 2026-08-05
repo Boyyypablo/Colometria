@@ -128,6 +128,12 @@ model Analysis {
   context            String         @default("casual")
   /// Objetivos escolhidos no upload (harmonia, roupas, olheiras, …).
   goals              String[]       @default([])
+  /// Intenção em texto livre (“quero valorizar o olhar”, etc.).
+  intention          String?
+  /// Plano da consultora IA (JSON tipado: priorities + changes).
+  consultantPlan     Json?
+  /// Meta da geração: modelo, usedVision, erro, etc.
+  consultantPlanMeta Json?
   consultantApproved Boolean        @default(false)
   /// Provider de face usado nesta análise (heuristic|blazeface|...).
   detectorProvider   String?

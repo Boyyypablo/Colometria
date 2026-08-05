@@ -10,6 +10,7 @@ export type FeedbackVote = {
 
 type RecItem = { hex: string; label: string };
 type CorrectionItem = { hex: string; label: string; target: string };
+type AiChangeItem = { id: string; label: string; target: string; hex?: string };
 
 type Props = {
   analysisId: string;
@@ -19,6 +20,7 @@ type Props = {
   eyeshadow: RecItem[];
   base: RecItem[];
   corrections?: CorrectionItem[];
+  aiChanges?: AiChangeItem[];
   initialVotes: FeedbackVote[];
 };
 
@@ -85,6 +87,7 @@ export function FeedbackPanel({
   eyeshadow,
   base,
   corrections = [],
+  aiChanges = [],
   initialVotes,
 }: Props) {
   const router = useRouter();
@@ -168,6 +171,25 @@ export function FeedbackPanel({
           </div>
         ),
       )}
+
+      {aiChanges.length > 0 ? (
+        <div className="space-y-1">
+          <h3 className="text-sm font-semibold">Plano da consultora IA</h3>
+          <ul>
+            {aiChanges.map((item) => (
+              <VoteButtons
+                key={item.target}
+                target={item.target}
+                label={item.label}
+                hex={item.hex}
+                current={votes[item.target]}
+                busy={pending || busyTarget === item.target}
+                onVote={onVote}
+              />
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       {corrections.length > 0 ? (
         <div className="space-y-1">
