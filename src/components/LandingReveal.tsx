@@ -13,10 +13,11 @@ type Props = {
   children: ReactNode;
   className?: string;
   delay?: number;
-  as?: "div" | "h1" | "h2" | "h3" | "p";
+  id?: string;
+  as?: "div" | "h1" | "h2" | "h3" | "p" | "section";
 } & Omit<
   HTMLMotionProps<"div">,
-  "children" | "initial" | "animate" | "whileInView" | "viewport"
+  "children" | "initial" | "animate" | "whileInView" | "viewport" | "id"
 >;
 
 /**
@@ -28,6 +29,7 @@ export function LandingReveal({
   children,
   className,
   delay = 0,
+  id,
   as = "div",
   ...rest
 }: Props) {
@@ -36,11 +38,16 @@ export function LandingReveal({
 
   if (reduce) {
     const Static = as;
-    return <Static className={className}>{children}</Static>;
+    return (
+      <Static id={id} className={className}>
+        {children}
+      </Static>
+    );
   }
 
   return (
     <Tag
+      id={id}
       className={className}
       initial={{ y: 14 }}
       whileInView={{ y: 0 }}

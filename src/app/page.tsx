@@ -5,6 +5,7 @@ import { LandingServices } from "@/components/LandingServices";
 import { LandingLooks } from "@/components/LandingLooks";
 import { LandingPalettes } from "@/components/LandingPalettes";
 import { LandingValue } from "@/components/LandingValue";
+import { LandingFaq } from "@/components/LandingFaq";
 import { LandingCta } from "@/components/LandingCta";
 import { auth } from "@/lib/auth";
 
@@ -21,6 +22,7 @@ export default async function HomePage() {
       <LandingLooks />
       <LandingPalettes loggedIn={loggedIn} />
       <LandingValue />
+      <LandingFaq />
       <LandingCta loggedIn={loggedIn} />
       <footer className="shell py-10 text-sm text-[var(--muted)]">
         <p className="font-brand text-2xl text-[var(--ink)]">Colorimetria</p>

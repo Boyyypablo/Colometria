@@ -24,6 +24,9 @@ export async function LandingHeader() {
             <a href="#paletas" className="landing-nav-link">
               Paletas
             </a>
+            <a href="#perguntas" className="landing-nav-link">
+              Perguntas
+            </a>
             <a href="#comecar" className="landing-nav-link">
               Começar
             </a>
